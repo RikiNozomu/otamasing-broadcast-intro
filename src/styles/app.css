@@ -1,0 +1,37 @@
+/* Tailwind with the โอตะม้าซิ่ง design-system tokens. The default palette is dropped, so only these colours exist. */
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --color-studio: #07081A;    /* dock background, inputs */
+  --color-panel: #10132B;     /* dock panel */
+  --color-raised: #192360;    /* buttons, selected list items */
+  --color-line: #262B4D;
+  --color-ink: #F2F3F8;
+  --color-ink-muted: #9AA0C3;
+  --color-scene: #00157D;     /* broadcast ground, from the Figma frame; also the primary blue */
+  --color-band: rgb(44 48 96 / 0.92);
+  --color-navy: #0A056B;
+  --color-yellow: #FFED0D;
+  --color-ok: #4EB436;
+  --color-ok-bg: #1E5B2E;
+  --color-danger: #B3261E;
+  --color-danger-ink: #FF8A80;
+  --color-danger-bg: #5B1E1E;
+  --color-track: #2B3155;
+  --color-home-date: #C8CCF5;
+
+  --font-display: "Otamasing Display", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Otamasing Sans", system-ui, sans-serif;
+}
+
+@layer base {
+  :root { color-scheme: dark; }
+  body { @apply bg-studio font-body text-[15px] leading-normal text-ink; }
+  a { @apply text-yellow; }
+  button:not(:disabled), label[for] { cursor: pointer; }
+  :where(button, select, input, a, label):focus-visible { @apply outline-2 outline-offset-2 outline-yellow; }
+}

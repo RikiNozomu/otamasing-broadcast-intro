@@ -1,0 +1,1101 @@
+{
+  "$ref": "#/definitions/OtamasingBroadcastFile",
+  "definitions": {
+    "OtamasingBroadcastFile": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1,
+          "default": 1
+        },
+        "races": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              "course": {
+                "type": "string",
+                "default": ""
+              },
+              "round": {
+                "type": "string",
+                "default": ""
+              },
+              "postTime": {
+                "type": "string",
+                "default": ""
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "jpName": {
+                "type": "string",
+                "default": ""
+              },
+              "subtitle": {
+                "type": "string",
+                "default": ""
+              },
+              "grade": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "G1",
+                      "G2",
+                      "G3",
+                      "L"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "jump": {
+                "type": "boolean",
+                "default": false
+              },
+              "class": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "2YO",
+                      "2YO_F",
+                      "3YO",
+                      "FM"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "surface": {
+                "type": "string",
+                "enum": [
+                  "Turf",
+                  "Dirt",
+                  "Jump"
+                ],
+                "default": "Turf"
+              },
+              "distanceM": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "highlight": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "style": {
+                "type": "object",
+                "properties": {
+                  "drawScheme": {
+                    "type": "string",
+                    "enum": [
+                      "jra",
+                      "us",
+                      "plain",
+                      "custom"
+                    ],
+                    "default": "jra"
+                  },
+                  "numberScheme": {
+                    "type": "string",
+                    "enum": [
+                      "jra",
+                      "us",
+                      "plain",
+                      "custom"
+                    ],
+                    "default": "plain"
+                  },
+                  "autoDraw": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "gradeStyle": {
+                    "type": "string",
+                    "enum": [
+                      "jra",
+                      "intl"
+                    ],
+                    "default": "jra"
+                  },
+                  "show": {
+                    "type": "object",
+                    "properties": {
+                      "draw": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "grade": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "class": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "fav": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "horseFlag": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "jockeyFlag": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "horseWeight": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "weight": {
+                        "type": "boolean",
+                        "default": true
+                      },
+                      "jpName": {
+                        "type": "boolean",
+                        "default": true
+                      }
+                    },
+                    "additionalProperties": false,
+                    "default": {}
+                  },
+                  "customColors": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "pattern": "^#[0-9A-Fa-f]{6}$"
+                        },
+                        {
+                          "type": "string",
+                          "pattern": "^#[0-9A-Fa-f]{6}$"
+                        }
+                      ]
+                    },
+                    "propertyNames": {
+                      "pattern": "^\\d+$"
+                    },
+                    "default": {}
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
+              "result": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "locked": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 30
+                    },
+                    "default": []
+                  },
+                  "auto": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 600,
+                    "default": 5
+                  },
+                  "since": {
+                    "type": "number",
+                    "default": 0
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
+              "card": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "auto": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 600,
+                    "default": 5
+                  },
+                  "since": {
+                    "type": "number",
+                    "default": 0
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
+              "photos": {
+                "type": "object",
+                "properties": {
+                  "card": {
+                    "type": "object",
+                    "properties": {
+                      "keys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "default": []
+                      },
+                      "index": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                      },
+                      "auto": {
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "seconds": {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 600,
+                        "default": 5
+                      },
+                      "since": {
+                        "type": "number",
+                        "default": 0
+                      }
+                    },
+                    "additionalProperties": false,
+                    "default": {}
+                  },
+                  "result": {
+                    "type": "object",
+                    "properties": {
+                      "keys": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "default": []
+                      },
+                      "index": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0
+                      },
+                      "auto": {
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "seconds": {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 600,
+                        "default": 5
+                      },
+                      "since": {
+                        "type": "number",
+                        "default": 0
+                      }
+                    },
+                    "additionalProperties": false,
+                    "default": {}
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
+              "runners": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "number": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 30
+                    },
+                    "draw": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 30
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "name": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "jockey": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "horseCountry": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}$"
+                        },
+                        {
+                          "type": "string",
+                          "const": ""
+                        }
+                      ],
+                      "default": ""
+                    },
+                    "jockeyCountry": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}$"
+                        },
+                        {
+                          "type": "string",
+                          "const": ""
+                        }
+                      ],
+                      "default": ""
+                    },
+                    "fav": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 30
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "horseWeight": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 200,
+                          "maximum": 800
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "horseWeightChange": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -99,
+                          "maximum": 99
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "weight": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 30,
+                          "maximum": 80,
+                          "multipleOf": 0.5
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "scratched": {
+                      "type": "boolean",
+                      "default": false
+                    },
+                    "finish": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 30
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "outcome": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "dnf",
+                            "dq"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "time": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "margin": {
+                      "type": "string",
+                      "default": ""
+                    }
+                  },
+                  "required": [
+                    "number"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 2,
+                "maxItems": 30
+              }
+            },
+            "required": [
+              "date",
+              "name",
+              "runners"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "horses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "trainedIn": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$"
+                  },
+                  {
+                    "type": "string",
+                    "const": ""
+                  }
+                ],
+                "default": ""
+              },
+              "bornIn": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$"
+                  },
+                  {
+                    "type": "string",
+                    "const": ""
+                  }
+                ],
+                "default": ""
+              },
+              "foaled": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  {
+                    "type": "string",
+                    "const": ""
+                  }
+                ],
+                "default": ""
+              },
+              "coat": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "Bay",
+                      "Dark Bay",
+                      "Brown",
+                      "Black",
+                      "Chestnut",
+                      "Dark Chestnut",
+                      "Grey",
+                      "White"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "sex": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "M",
+                      "F",
+                      "G"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "sire": {
+                "type": "string",
+                "default": ""
+              },
+              "dam": {
+                "type": "string",
+                "default": ""
+              },
+              "bms": {
+                "type": "string",
+                "default": ""
+              },
+              "sireSire": {
+                "type": "string",
+                "default": ""
+              },
+              "sireDam": {
+                "type": "string",
+                "default": ""
+              },
+              "damDam": {
+                "type": "string",
+                "default": ""
+              },
+              "owner": {
+                "type": "string",
+                "default": ""
+              },
+              "trainer": {
+                "type": "string",
+                "default": ""
+              },
+              "silks": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "body": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "default": "#000000"
+                      },
+                      "pattern": {
+                        "type": "string",
+                        "enum": [
+                          "plain",
+                          "hoop1",
+                          "hoop2",
+                          "hoop3",
+                          "belt",
+                          "sash",
+                          "cross",
+                          "stripes",
+                          "seams",
+                          "braces",
+                          "halves",
+                          "quartered",
+                          "check",
+                          "harlequin",
+                          "diamondBand",
+                          "chevron",
+                          "bigV",
+                          "sawtooth",
+                          "hash",
+                          "yoke",
+                          "spots",
+                          "stars",
+                          "star",
+                          "ring",
+                          "diamond",
+                          "jaggedYoke",
+                          "zigzag2",
+                          "zigzagBand",
+                          "rings",
+                          "bigCheck",
+                          "bigHarlequin",
+                          "bigDiamondBand",
+                          "disc",
+                          "fleurDeLys",
+                          "spots3",
+                          "triangle",
+                          "sashReverse",
+                          "blockGrid"
+                        ],
+                        "default": "plain"
+                      },
+                      "accent": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "default": "#E30613"
+                      },
+                      "sleeves": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "default": "#000000"
+                      },
+                      "sleevePattern": {
+                        "type": "string",
+                        "enum": [
+                          "plain",
+                          "hoop1",
+                          "hoop2",
+                          "hoop3",
+                          "stripes",
+                          "chevrons",
+                          "diamonds",
+                          "check",
+                          "spots",
+                          "stars",
+                          "cuffs",
+                          "halved",
+                          "hoop4",
+                          "hoop5",
+                          "stripesDense",
+                          "zigzagBand",
+                          "blocks",
+                          "stripe1"
+                        ],
+                        "default": "plain"
+                      },
+                      "sleeveAccent": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$",
+                        "default": "#FFE600"
+                      },
+                      "yoke": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^#[0-9a-fA-F]{6}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "silksMode": {
+                "type": "string",
+                "enum": [
+                  "upload",
+                  "pattern",
+                  "none"
+                ]
+              },
+              "silksImage": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "default": null
+              },
+              "photos": {
+                "type": "object",
+                "properties": {
+                  "keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "default": []
+                  },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "auto": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 600,
+                    "default": 5
+                  },
+                  "since": {
+                    "type": "number",
+                    "default": 0
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
+              "record": {
+                "type": "object",
+                "properties": {
+                  "starts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "first": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "second": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "third": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              },
+              "earnings": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "JPY",
+                  "USD",
+                  "GBP",
+                  "EUR",
+                  "AUD",
+                  "HKD",
+                  "AED",
+                  "SAR",
+                  "THB"
+                ],
+                "default": "JPY"
+              },
+              "races": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "grade": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "course": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "surface": {
+                      "type": "string",
+                      "enum": [
+                        "Turf",
+                        "Dirt",
+                        "Jump"
+                      ],
+                      "default": "Turf"
+                    },
+                    "distanceM": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "fav": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "finish": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "outcome": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "dnf",
+                            "dq"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "field": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "time": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "other": {
+                      "type": "string",
+                      "default": ""
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "view": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "auto": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "seconds": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 600,
+                    "default": 8
+                  },
+                  "since": {
+                    "type": "number",
+                    "default": 0
+                  }
+                },
+                "additionalProperties": false,
+                "default": {}
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "horseSettings": {
+          "type": "object",
+          "properties": {
+            "currency": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "own"
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "JPY",
+                    "USD",
+                    "GBP",
+                    "EUR",
+                    "AUD",
+                    "HKD",
+                    "AED",
+                    "SAR",
+                    "THB"
+                  ]
+                }
+              ],
+              "default": "own"
+            },
+            "rates": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "default": {}
+            }
+          },
+          "additionalProperties": false
+        },
+        "home": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "default": "Today's Races"
+            },
+            "subtitle": {
+              "type": "string",
+              "default": ""
+            },
+            "highlight": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "background": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "showCourse": {
+              "type": "boolean",
+              "default": true
+            },
+            "showDate": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "active": {
+          "type": "string"
+        },
+        "transition": {
+          "type": "string",
+          "enum": [
+            "wipe",
+            "slide",
+            "fade",
+            "none"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

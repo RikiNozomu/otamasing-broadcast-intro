@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "home": { "title": "Tokyo Races", "subtitle": "2026.11.29" },
+  "races": [
+    {
+      "date": "2026-11-29",
+      "course": "Tokyo",
+      "round": "11R",
+      "postTime": "15:40",
+      "name": "Sample Cup",
+      "jpName": "第1回 サンプルカップ",
+      "subtitle": "Example race for the broadcast overlay",
+      "grade": "G1",
+      "jump": false,
+      "class": null,
+      "surface": "Turf",
+      "distanceM": 2400,
+      "result": { "page": 0, "locked": [2] },
+      "runners": [
+        { "number": 1, "name": "Morning Gallop", "jockey": "A. Sample", "horseCountry": "JP", "jockeyCountry": "JP", "fav": 3, "finish": 2, "time": "2:24.3", "margin": "1¼" },
+        { "number": 2, "name": "Silver Paddock", "jockey": "B. Example", "horseCountry": "GB", "jockeyCountry": "FR", "fav": 1, "finish": 1, "time": "2:24.1" },
+        { "number": 3, "name": "Northern Lantern", "jockey": "C. Rider", "horseCountry": "IE", "jockeyCountry": "IE", "fav": 2, "outcome": "dnf" },
+        { "number": 4, "name": "Checkered Flag", "jockey": "D. Jockey", "horseCountry": "US", "jockeyCountry": "JP", "fav": 5, "scratched": true },
+        { "number": 5, "name": "Royal Furlong", "jockey": "E. Saddle", "horseCountry": "JP", "jockeyCountry": "IT", "fav": 4, "finish": 3, "time": "2:24.3", "margin": "nk" }
+      ]
+    },
+    {
+      "date": "2026-11-29",
+      "course": "Tokyo",
+      "round": "12R",
+      "postTime": "16:30",
+      "name": "Sample Juvenile",
+      "grade": "G3",
+      "class": "2YO",
+      "surface": "Turf",
+      "distanceM": 1600,
+      "style": { "drawScheme": "us", "numberScheme": "us", "show": { "draw": false } },
+      "runners": [
+        { "number": 1, "name": "Gate Seven", "jockey": "G. Stirrup", "horseCountry": "JP", "jockeyCountry": "GB" },
+        { "number": 2, "name": "Blue Silks", "jockey": "H. Reins", "horseCountry": "JP", "jockeyCountry": "JP" }
+      ]
+    }
+  ]
+}
