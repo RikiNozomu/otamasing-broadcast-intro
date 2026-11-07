@@ -73,7 +73,7 @@ describe("horses in the data", () => {
     if (!res.ok) return;
     const cur = sampleData();
     const next = mergeImport(cur, res.data, "append");
-    expect(next.horses.map((h) => h.name)).toEqual(["sample star", "Other"]);
+    expect(next.horses.map((h) => h.name)).toEqual(["sample star", ...cur.horses.slice(1).map((h) => h.name), "Other"]);
     expect(next.horses[0].id).toBe(cur.horses[0].id);
     expect(next.races).toHaveLength(cur.races.length);
   });

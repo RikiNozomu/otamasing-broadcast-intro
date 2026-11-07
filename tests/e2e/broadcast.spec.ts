@@ -14,13 +14,13 @@ async function open(context: BrowserContext): Promise<{ dock: Page; overlay: Pag
 test("first open seeds the sample and the overlay shows the Active race", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R");
-  await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน", "ม้า"]);
+  await expect(dock.getByRole("tab")).toHaveText(["ภาพรวม", "การแข่งขัน", "ม้า", "จ็อกกี้"]);
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Cup");
   // 18 runners: 10 a page (pages are turned by hand by default, so page 1 stays)
   await expect(overlay.locator("[data-layer][data-active] [data-no]")).toHaveCount(10);
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=on]")).toHaveAttribute("data-no", "9");
   // the title is on top: name with the grade badge after it, then date · round · course · distance
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toHaveText(/2026\.11\.29.*11R.*Tokyo.*2400/i);
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toHaveText(/2026\.11\.29.*11R.*Kyoto.*2200/i);
 });
 
 test("setting home or another race Active switches the overlay with a transition", async ({ context }) => {
@@ -39,7 +39,8 @@ test("setting home or another race Active switches the overlay with a transition
   await dock.getByTestId("home-show-date").click();
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-date]")).toHaveCount(0);
   await dock.getByLabel("ทรานซิชัน").selectOption("none");
-  await dock.getByRole("button", { name: /ตั้ง 12R .* เป็น Active/ }).click();
+  // the row's scene buttons sit over its middle, so click near its left edge
+  await dock.getByRole("button", { name: /ตั้ง 12R .* เป็น Active/ }).click({ position: { x: 60, y: 20 } });
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Sample Juvenile");
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 12R");
 });
@@ -50,7 +51,7 @@ test("edits in the dock reach the overlay: name, round, highlight, toggles, flag
   await dock.getByLabel("ชื่อรายการ").fill("Edited Cup");
   await dock.getByLabel("เลขรอบ").fill("Main");
   await expect(overlay.locator("[data-layer][data-active] [data-testid=race-name]")).toHaveText("Edited Cup");
-  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toContainText(/Main.*Tokyo/);
+  await expect(overlay.locator("[data-layer][data-active] [data-testid=race-facts]")).toContainText(/Main.*Kyoto/);
   await dock.locator("[data-h='3']").click();
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=on]")).toHaveAttribute("data-no", "3");
   await expect(overlay.locator("[data-layer][data-active] [data-no][data-hl=out]")).toHaveAttribute("data-no", "9");
@@ -184,7 +185,7 @@ test("export outside OBS downloads the file", async ({ context }) => {
   const { dock } = await open(context);
   await dock.getByRole("button", { name: "ส่งออก", exact: true }).click();
   const [download] = await Promise.all([dock.waitForEvent("download"), dock.getByRole("button", { name: "บันทึกไฟล์…" }).click()]);
-  expect(download.suggestedFilename()).toMatch(/^otamasing-broadcast-compact-.*\.json$/);
+  expect(download.suggestedFilename()).toMatch(/^otamasing-broadcast-intro-.*\.json$/);
   await expect(dock.getByTestId("export-panel").getByRole("status")).toContainText("ดาวน์โหลด");
 });
 
@@ -488,7 +489,7 @@ test("pictures are named image/<date-time>.<ext>, the JSON carries the names, a 
   context.addInitScript(() => { (window as unknown as { obsstudio: object }).obsstudio = {}; });
   const { dock } = await open(context);
   const stored = () => dock.evaluate(() => new Promise<string[]>((res) => {
-    const req = indexedDB.open("otamasing-broadcast-compact", 1);
+    const req = indexedDB.open("otamasing-broadcast-intro", 1);
     req.onsuccess = () => { const all = req.result.transaction("images").objectStore("images").getAllKeys(); all.onsuccess = () => res(all.result as string[]); };
   }));
   await dock.getByRole("button", { name: "แก้ไข 11R Sample Cup" }).click();

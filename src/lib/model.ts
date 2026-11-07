@@ -5,13 +5,15 @@
  */
 import { z } from "zod";
 import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from "./horseSchema.ts";
+import { IntroSchema, JockeySchema, type Intro, type Jockey } from "./introSchema.ts";
 
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
 
 export const SCHEMES = ["jra", "us", "plain", "custom"] as const;
 export type Scheme = (typeof SCHEMES)[number];
-export const TRANSITIONS = ["wipe", "slide", "fade", "none"] as const;
+/** "stripes" = the F1-style sweep of slanted bands (the default here); the others come from the compact site. */
+export const TRANSITIONS = ["stripes", "wipe", "slide", "fade", "none"] as const;
 export type Transition = (typeof TRANSITIONS)[number];
 export const GRADES = ["G1", "G2", "G3", "L"] as const;
 export type Grade = (typeof GRADES)[number];
@@ -142,6 +144,8 @@ export const RaceSchema = z
     card: CardViewSchema.default({}),
     /** Pictures live in the browser; the file holds their names (image/<date-time>.<ext>), order and slideshow settings. */
     photos: z.object({ card: PhotoSetSchema.default({}), result: PhotoSetSchema.default({}) }).default({}),
+    /** The race intro: course scene, history, runner intro and starting grid. */
+    intro: IntroSchema.default({}),
     runners: z.array(RunnerSchema).min(MIN_RUNNERS, `ม้าต้องมีอย่างน้อย ${MIN_RUNNERS} ตัว`).max(MAX_RUNNERS, `ม้าได้ไม่เกิน ${MAX_RUNNERS} ตัว`),
   })
   .superRefine((r, ctx) => {
@@ -152,7 +156,7 @@ export const RaceSchema = z
     }
   });
 export type RaceInput = z.input<typeof RaceSchema>;
-export type Race = Omit<z.output<typeof RaceSchema>, "id"> & { id: string };
+export type Race = Omit<z.output<typeof RaceSchema>, "id" | "intro"> & { id: string; intro: Intro };
 
 export const HomeSchema = z.object({
   title: z.string().default("Today's Races"),
@@ -175,10 +179,12 @@ export const FileSchema = z.object({
   races: z.array(RaceSchema).default([]),
   horses: z.array(HorseSchema).default([]),
   horseSettings: HorseSettingsSchema.optional(),
+  /** Jockeys (the จ็อกกี้ tab): photos for the runner intro, matched to the runners by name. */
+  jockeys: z.array(JockeySchema).default([]),
   home: HomeSchema.optional(),
   active: z.string().optional(),
   transition: z.enum(TRANSITIONS).optional(),
-}).refine((f) => f.races.length + f.horses.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการหรือม้า 1 ตัว", path: ["races"] });
+}).refine((f) => f.races.length + f.horses.length + f.jockeys.length > 0, { message: "ต้องมีอย่างน้อย 1 รายการ ม้า 1 ตัว หรือจ็อกกี้ 1 คน", path: ["races"] });
 export type FileInput = z.input<typeof FileSchema>;
 export type FileOutput = z.output<typeof FileSchema>;
 
@@ -188,7 +194,11 @@ export interface AppData {
   /** Horse profiles (the ม้า tab) and their settings. */
   horses: Horse[];
   horseSettings: HorseSettings;
-  /** "home" (the race list page), "blank" (nothing), a race id (its racecard), `<race id>:result` (its result page) or `horse:<id>`. */
+  jockeys: Jockey[];
+  /**
+   * "home" (the race list page), "blank" (nothing), a race id (its racecard), `<race id>:result` (its result page),
+   * `horse:<id>`, or a race's intro scenes: `course:<race id>`, `runner:<race id>`, `grid:<race id>`.
+   */
   active: string;
   transition: Transition;
   home: Home;
@@ -205,13 +215,19 @@ const HORSE = "horse:";
 export const horseOf = (horseId: string) => HORSE + horseId;
 /** The Active value that shows a race's result page. */
 export const resultOf = (raceId: string) => raceId + RESULT;
+/** The race intro scenes: the course (globe, 3D track, history), one runner at a time, the starting grid. */
+export const INTRO_VIEWS = ["course", "runner", "grid"] as const;
+export type IntroView = (typeof INTRO_VIEWS)[number];
+/** The Active value that shows one of a race's intro scenes. */
+export const introOf = (view: IntroView, raceId: string) => `${view}:${raceId}`;
 /** What an Active value points at. */
 export function parseActive(active: string):
   | { view: "home" | "blank"; raceId?: undefined; horseId?: undefined }
-  | { view: "card" | "result"; raceId: string; horseId?: undefined }
+  | { view: "card" | "result" | IntroView; raceId: string; horseId?: undefined }
   | { view: "horse"; raceId?: undefined; horseId: string } {
   if (active === HOME || active === BLANK) return { view: active };
   if (active.startsWith(HORSE)) return { view: "horse", horseId: active.slice(HORSE.length) };
+  for (const v of INTRO_VIEWS) if (active.startsWith(v + ":")) return { view: v, raceId: active.slice(v.length + 1) };
   return active.endsWith(RESULT) ? { view: "result", raceId: active.slice(0, -RESULT.length) } : { view: "card", raceId: active };
 }
 /** An Active value is valid when it is home or blank, or points at a race or a horse in the lists. */
@@ -229,6 +245,15 @@ export const newId = () => `r${Date.now().toString(36)}${(counter++).toString(36
 
 /** Same race = same date + course + round (case-insensitive); importing it again replaces it. */
 export const raceKey = (r: Pick<Race, "date" | "course" | "round">) => `${r.date}|${r.course.trim().toLowerCase()}|${r.round.trim().toLowerCase()}`;
+
+/** A race from a file gets an id, and so does each of its history moments. */
+const withIds = (r: z.output<typeof RaceSchema>): Race => ({
+  ...r, id: r.id ?? newId(),
+  intro: { ...r.intro, history: { ...r.intro.history, items: r.intro.history.items.map((h) => ({ ...h, id: h.id ?? newId() })) } },
+});
+
+/** Jockeys are matched by name: case, spaces and dots don't count ("C.Lemaire" = "C. Lemaire"). */
+export const jockeyKey = (name: string) => name.toLowerCase().replace(/[\s.]/g, "");
 
 export type ParseResult = { ok: true; data: z.output<typeof FileSchema> } | { ok: false; error: string };
 
@@ -258,17 +283,20 @@ export function parseFile(text: string): ParseResult {
  */
 export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mode: "append" | "replace"): AppData {
   const active = cur.active === BLANK ? BLANK : HOME;
-  const incoming: Race[] = file.races.map((r) => ({ ...r, id: r.id ?? newId() }));
+  const incoming: Race[] = file.races.map(withIds);
   const incomingHorses: Horse[] = file.horses.map((h) => ({ ...h, id: h.id ?? newId() }));
+  const incomingJockeys: Jockey[] = file.jockeys.map((j) => ({ ...j, id: j.id ?? newId() }));
   if (mode === "replace") {
     // only what the file holds is replaced: a file of races keeps the horses, a file of horses keeps the races
     const hasRaces = incoming.length > 0, hasHorses = incomingHorses.length > 0;
     const races = hasRaces ? incoming : cur.races;
     const horses = hasHorses ? incomingHorses : cur.horses;
+    const jockeys = incomingJockeys.length ? incomingJockeys : cur.jockeys;
     return {
       ...cur,
       races,
       horses,
+      jockeys,
       horseSettings: hasHorses ? file.horseSettings ?? cur.horseSettings : cur.horseSettings,
       active,
       transition: file.transition ?? cur.transition,
@@ -289,14 +317,21 @@ export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mod
     if (i >= 0) horses[i] = { ...h, id: horses[i].id };
     else horses.push(h);
   }
-  return { ...cur, races, horses, active };
+  // same jockey = same name (see jockeyKey) or same id
+  const jockeys = [...cur.jockeys];
+  for (const j of incomingJockeys) {
+    const i = jockeys.findIndex((x) => jockeyKey(x.name) === jockeyKey(j.name) || x.id === j.id);
+    if (i >= 0) jockeys[i] = { ...j, id: jockeys[i].id };
+    else jockeys.push(j);
+  }
+  return { ...cur, races, horses, jockeys, active };
 }
 
 export function exportFile(data: AppData, only?: string): FileInput {
   const races = only ? data.races.filter((r) => r.id === only) : data.races;
   return only
     ? { version: 1, races }
-    : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, home: data.home, active: data.active, transition: data.transition };
+    : { version: 1, races, horses: data.horses, horseSettings: data.horseSettings, jockeys: data.jockeys, home: data.home, active: data.active, transition: data.transition };
 }
 
 /** A file with just one horse (from the ม้า tab). */

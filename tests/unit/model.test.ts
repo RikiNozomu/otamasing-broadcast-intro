@@ -38,8 +38,9 @@ describe("parseFile", () => {
 
 describe("mergeImport", () => {
   const cur: AppData = sampleData();
-  const file = (round: string, name: string) => {
-    const r = parseFile(JSON.stringify({ races: [{ date: "2026-11-29", course: "tokyo", round, name, runners: [{ number: 1 }, { number: 2 }] }] }));
+  // the sample's 11R is at Kyoto, the others at Tokyo
+  const file = (round: string, name: string, course = round === "11R" ? "kyoto" : "tokyo") => {
+    const r = parseFile(JSON.stringify({ races: [{ date: "2026-11-29", course, round, name, runners: [{ number: 1 }, { number: 2 }] }] }));
     if (!r.ok) throw new Error(r.error);
     return r.data;
   };

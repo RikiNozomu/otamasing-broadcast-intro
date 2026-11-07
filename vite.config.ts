@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // base "./" keeps every asset path relative, so the build works under
-// https://<user>.github.io/otamasing-broadcast-compact/ without knowing the repo name.
+// https://<user>.github.io/otamasing-broadcast-intro/ without knowing the repo name.
 export default defineConfig({
   base: "./",
   plugins: [react(), tailwindcss()],

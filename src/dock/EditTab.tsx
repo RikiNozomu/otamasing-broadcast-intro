@@ -1,4 +1,7 @@
-/** Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
+/**
+ * Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล), its own style (สไตล์), and its intro
+ * scenes (สนาม, ประวัติ, แนะนำตัว, Starting Gate). A racecard or result that is not on screen shows a preview.
+ */
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CLASSES, exportFile, parseActive, resultOf, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type RaceClass, type Runner, type Scheme, type Style } from "../lib/model";
@@ -18,6 +21,13 @@ import { Switch } from "../components/Switch";
 import { FlagPicker } from "./FlagPicker";
 import { CardPagesSection } from "./CardPagesSection";
 import { pageOfHorse, showCardPage } from "../lib/cardPages";
+import { CoursePanel } from "./intro/CoursePanel";
+import { HistoryPanel } from "./intro/HistoryPanel";
+import { RunnerPanel } from "./intro/RunnerPanel";
+import { GatePanel } from "./intro/GatePanel";
+
+type Sub = "data" | "result" | "style" | "course" | "history" | "runner" | "grid";
+const INTRO_SUBS: Sub[] = ["course", "history", "runner", "grid"];
 
 const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
 const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า" };
@@ -25,7 +35,7 @@ const CLASS_LABEL: Record<RaceClass, string> = { "2YO": "2YO", "2YO_F": "2YO (�
 
 export function EditTab({ editing, setEditing }: { editing: string | null; setEditing: (id: string) => void }) {
   const d = useData();
-  const [sub, setSub] = useState<"data" | "result" | "style">("data");
+  const [sub, setSub] = useState<Sub>("data");
   /** The race whose export panel is open. */
   const [exporting, setExporting] = useState<string | null>(null);
   const race = d.races.find((r) => r.id === editing) ?? d.races[0];
@@ -58,7 +68,8 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
     </Field>
   );
   const runnerGrid = "grid grid-cols-[30px_minmax(0,1fr)_46px_44px_22px] items-center gap-1 text-xs";
-  const subtabs = [["data", "ข้อมูล"], ["result", "ผล"], ["style", "สไตล์"]] as const;
+  const subtabs = [["data", "ข้อมูล"], ["result", "ผล"], ["style", "สไตล์"], ["course", "สนาม"], ["history", "ประวัติ"], ["runner", "แนะนำตัว"], ["grid", "Starting Gate"]] as const;
+  const intro = INTRO_SUBS.includes(sub);
 
   return (
     <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-edit" aria-labelledby="tab-edit">
@@ -74,9 +85,9 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
         })}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
-        <span>{isAct ? `${view === "result" ? "หน้าผล" : "การ์ด"}ของรายการนี้ Active อยู่ แก้แล้วขึ้นจอทันที` : `${view === "result" ? "หน้าผล" : "การ์ด"}นี้ไม่ได้ Active แก้ได้ แต่ยังไม่ขึ้นจอ (ดูพรีวิวด้านล่าง)`}</span>
+        <span>{intro ? "ฉาก intro ของรายการนี้ (สนาม 3D, แนะนำตัว, Starting Gate)" : isAct ? `${view === "result" ? "หน้าผล" : "การ์ด"}ของรายการนี้ Active อยู่ แก้แล้วขึ้นจอทันที` : `${view === "result" ? "หน้าผล" : "การ์ด"}นี้ไม่ได้ Active แก้ได้ แต่ยังไม่ขึ้นจอ (ดูพรีวิวด้านล่าง)`}</span>
         <span className="flex flex-wrap gap-1.5">
-          {!isAct && <Button variant="primary" onClick={() => update((x) => ({ ...x, active: view === "result" ? resultOf(race.id) : race.id }))}>{view === "result" ? "ตั้งหน้าผลเป็น Active" : "ตั้งเป็น Active"}</Button>}
+          {!isAct && !intro && <Button variant="primary" onClick={() => update((x) => ({ ...x, active: view === "result" ? resultOf(race.id) : race.id }))}>{view === "result" ? "ตั้งหน้าผลเป็น Active" : "ตั้งเป็น Active"}</Button>}
           <Button aria-expanded={exporting === race.id} onClick={() => setExporting((x) => (x === race.id ? null : race.id))}>ส่งออกรายการนี้</Button>
         </span>
       </div>
@@ -86,9 +97,9 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             job={{ name: `${race.date.replaceAll("-", "")}-${(race.round || race.name).replace(/\W+/g, "")}.json`, text: JSON.stringify(exportFile(d, race.id), null, 2), count: 1 }} />
         )}
       </AnimatePresence>
-      {!isAct && <div className="relative aspect-video overflow-hidden border border-line" data-testid="preview"><Stage className="pointer-events-none">{view === "result" ? <ResultScene race={race} /> : <RacecardScene race={race} />}</Stage></div>}
+      {!isAct && !intro && <div className="relative aspect-video overflow-hidden border border-line" data-testid="preview"><Stage className="pointer-events-none">{view === "result" ? <ResultScene race={race} /> : <RacecardScene race={race} />}</Stage></div>}
 
-      <div className="grid grid-cols-3 border border-line" role="tablist" aria-label="ส่วนที่แก้ไข">
+      <div className="grid grid-cols-4 border border-line" role="tablist" aria-label="ส่วนที่แก้ไข">
         {subtabs.map(([k, label]) => (
           <button key={k} type="button" role="tab" id={`sub-${k}`} aria-selected={sub === k} onClick={() => setSub(k)}
             className={cx("relative p-[7px] text-[13px]", sub === k ? "bg-raised text-ink" : "bg-studio text-ink-muted")}>
@@ -98,7 +109,11 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
         ))}
       </div>
 
-      {sub === "data" ? (
+      {sub === "course" ? <CoursePanel race={race} />
+      : sub === "history" ? <HistoryPanel race={race} />
+      : sub === "runner" ? <RunnerPanel race={race} />
+      : sub === "grid" ? <GatePanel race={race} />
+      : sub === "data" ? (
         <div className="grid gap-3" role="tabpanel" aria-labelledby="sub-data">
           <PhotoSetEditor race={race} view="card" />
           <Section title="ข้อมูลรายการ">

@@ -1,12 +1,18 @@
 /** The live scene: whatever is Active, and the transition when Active changes (the new scene animates in over the old one). */
 import { animate, motion, useMotionValue, useTransform, type TargetAndTransition, type Transition as MotionTransition } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { BLANK, parseActive, type Transition } from "../lib/model";
 import { useData } from "../lib/store";
 import { RacecardScene } from "./RacecardScene";
 import { RaceListScene } from "./RaceListScene";
 import { ResultScene } from "./ResultScene";
 import { HorseScene } from "./HorseScene";
+import { LeavingContext } from "./leaving";
+// the course scene brings three.js: its own chunk, loaded as soon as the overlay starts (see Overlay)
+export const loadCourseScene = () => import("./intro/CourseScene");
+const CourseScene = lazy(() => loadCourseScene().then((m) => ({ default: m.CourseScene })));
+import { RunnerScene } from "./intro/RunnerScene";
+import { GridScene } from "./intro/GridScene";
 
 /** What one Active value draws. A deleted race or horse falls back to the home page. */
 export function Scene({ id }: { id: string }) {
@@ -19,10 +25,21 @@ export function Scene({ id }: { id: string }) {
   }
   const race = a.view === "home" ? undefined : d.races.find((r) => r.id === a.raceId);
   if (!race) return <RaceListScene />;
+  if (a.view === "course") return <Suspense fallback={null}><CourseScene race={race} /></Suspense>;
+  if (a.view === "runner") return <RunnerScene race={race} />;
+  if (a.view === "grid") return <GridScene race={race} />;
   return a.view === "result" ? <ResultScene race={race} /> : <RacecardScene race={race} />;
 }
 
 const WIPE_EASE = [0.7, 0, 0.25, 1] as const;
+/** Stripes: the old scene plays its exit for this long, then the bands sweep across (and the new scene starts under them). */
+export const EXIT_MS = 450;
+const SWEEP_S = 1.05;
+/** How far the bands lean (px across the screen's height). */
+const SLANT = 360;
+/** The bands, back to front: [width px, colour] — a navy block, then yellow, a gap, a thin white line at the leading edge. */
+const BANDS: [number, string][] = [[260, "var(--color-navy)"], [90, "var(--color-yellow)"], [26, "transparent"], [14, "#fff"]];
+const BANDS_W = BANDS.reduce((t, [w]) => t + w, 0);
 const SLIDE_EASE = [0.65, 0, 0.25, 1] as const;
 
 /**
@@ -46,15 +63,36 @@ export function LiveScene() {
   const clipPath = useTransform(wipe, (v) => `inset(0 ${(1 - v) * 100}% 0 0)`);
   const clipPathOut = useTransform(wipe, (v) => `inset(0 0 0 ${v * 100}%)`);
   const barX = useTransform(wipe, (v) => v * 1920 - 22);
+  // Stripes: the bands' trailing edge goes from off the left (-SLANT) to off the right; the new scene shows behind it.
+  const sweep = useMotionValue(1);
+  const edge = useTransform(sweep, (v) => -SLANT - BANDS_W + v * (1920 + SLANT + BANDS_W));
+  const slantIn = useTransform(edge, (x) => `polygon(0 0, ${x + SLANT}px 0, ${x}px 100%, 0 100%)`);
+  const slantOut = useTransform(edge, (x) => `polygon(${x + SLANT}px 0, 1920px 0, 1920px 100%, ${x}px 100%)`);
   const dropLeaving = () => setLayers((ls) => (ls.some((l) => l.leaving) ? ls.filter((l) => !l.leaving) : ls));
 
   const shown = useRef(d.active);
   const wipeAnim = useRef<ReturnType<typeof animate> | null>(null);
+  const exitTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (shown.current === d.active) return;
     shown.current = d.active;
     const t = d.transition;
     wipeAnim.current?.stop();
+    window.clearTimeout(exitTimer.current);
+    if (t === "stripes") {
+      // the old scene plays its exit first, then the bands sweep and the new scene starts under them
+      const next = d.active;
+      setLayers((ls) => [{ ...ls[ls.length - 1], leaving: true, transition: "stripes" }]);
+      exitTimer.current = window.setTimeout(() => {
+        setLayers((ls) => {
+          const old = ls.filter((l) => l.leaving).slice(-1).map((l) => ({ ...l, out: next === BLANK }));
+          return [...old, { id: next, n: seq++, transition: "stripes" }];
+        });
+        sweep.set(0);
+        wipeAnim.current = animate(sweep, 1, { duration: SWEEP_S, ease: WIPE_EASE, onComplete: dropLeaving });
+      }, EXIT_MS);
+      return;
+    }
     setLayers((ls) => {
       const top = ls[ls.length - 1];
       if (t === "none") return [{ id: d.active, n: seq++, transition: null }];
@@ -67,27 +105,40 @@ export function LiveScene() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only a change of Active starts a transition
   }, [d.active]);
-  useEffect(() => () => wipeAnim.current?.stop(), []);
+  useEffect(() => () => { wipeAnim.current?.stop(); window.clearTimeout(exitTimer.current); }, []);
   const top = layers[layers.length - 1];
   const wipingOut = layers.find((l) => l.out && l.transition === "wipe");
   const wiping = layers.length > 1 && (top.transition === "wipe" || !!wipingOut);
+  // stripes: sweeping once the new layer is there (before that the old scene is only playing its exit)
+  const sweeping = layers.length > 1 && top.transition === "stripes" && !top.leaving;
 
   return (
     <>
       {layers.map((l) => {
         const m = l.transition === "slide" || l.transition === "fade" ? MOTION[l.transition] : null;
         const revealing = wiping && l === top && top.transition === "wipe";
+        const stripeIn = sweeping && l === top && l.id !== BLANK;
+        const stripeOut = sweeping && l.leaving && l.out;
         return (
           <motion.div key={l.n} className="absolute inset-0" data-layer="" data-active={l.leaving ? undefined : l.id}
-            style={revealing ? { clipPath } : l === wipingOut ? { clipPath: clipPathOut } : undefined}
+            style={revealing ? { clipPath } : l === wipingOut ? { clipPath: clipPathOut } : stripeIn ? { clipPath: slantIn } : stripeOut ? { clipPath: slantOut } : undefined}
             initial={m && !l.leaving ? m.from : false}
             animate={m ? (l.out ? m.out : l.leaving ? m.leave : m.to) : {}}
             transition={m?.transition}
             onAnimationComplete={() => { if (m && (!l.leaving || l.out)) dropLeaving(); }}>
-            <Scene id={l.id} />
+            <LeavingContext.Provider value={!!l.leaving}><Scene id={l.id} /></LeavingContext.Provider>
           </motion.div>
         );
       })}
+      {sweeping && (
+        // the slanted bands leading the new scene: navy, yellow, then a thin white line ahead
+        <motion.div key={`stripes${top.n}`} aria-hidden="true" data-testid="stripes" style={{ x: edge }}
+          className="pointer-events-none absolute inset-y-0 left-0 z-10 flex">
+          {BANDS.map(([w, c], i) => (
+            <span key={i} className="h-full flex-none" style={{ width: w, background: c, transform: `skewX(${-Math.atan(SLANT / 1080) * 180 / Math.PI}deg)`, transformOrigin: "0 100%" }} />
+          ))}
+        </motion.div>
+      )}
       {wiping && (
         // the yellow + white bar that leads the wipe: yellow just inside the new scene, a thin white line ahead of it
         <motion.div key={`bar${top.n}`} aria-hidden="true" style={{ x: barX }}

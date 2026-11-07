@@ -1,42 +1,54 @@
-# โอตะม้าซิ่ง Broadcast Compact
+# โอตะม้าซิ่ง Broadcast Intro
 
-ต่อยอดจาก [otamasing-broadcast](https://github.com/RikiNozomu/otamasing-broadcast) โดยเปลี่ยนหน้าตา: ชื่อรายการอยู่ด้านบน (ชื่อ + ป้ายเกรด/Class หลังชื่อ แล้วบรรทัด วันที่ · รอบ · สนาม · ระยะ), ตารางรายชื่อม้าและผลการแข่งขันเต็มความกว้าง หน้าละไม่เกิน 10 แถว เปลี่ยนหน้าเองหรือให้วนอัตโนมัติ (ค่าเริ่มต้นเปลี่ยนเอง) และรูปฉากหลังเต็มจอมี gradient ทับ ข้อมูลเก็บแยกจากเว็บเดิม (คนละ localStorage key) ไฟล์ JSON ใช้ร่วมกันได้
+ชุดฉาก Intro ก่อนการแข่งขันแบบ F1 "Intro Package & Starting Grid" สำหรับถ่ายทอดสดใน OBS ต่อยอดจาก [otamasing-broadcast-compact](https://github.com/RikiNozomu/otamasing-broadcast-compact) (หน้าตา รูปแบบไฟล์ JSON และโครงสร้างเดียวกัน ทุกฉากของ compact ยังอยู่ครบ) แล้วเพิ่ม 3 ฉาก:
 
-แผงควบคุมใน OBS (Custom Browser Dock) กับหน้าจอออกอากาศ (Browser Source) สำหรับ **การ์ดรายชื่อม้า** และ **รายการแข่งขัน** ของโอตะม้าซิ่ง เป็นเว็บ static บน GitHub Pages ไม่มี server ไม่มีล็อกอิน และไม่เกี่ยวกับเกม POG
+1. **ฉากสนาม (THE COURSE)**: โลก 3D แบบเส้นขาวหมุนเข้ามา ซูมลงสนาม แล้วกล้องเอียงเข้าวงโคจรรอบสนาม 3D ช้าๆ ไฮไลต์ลู่ตามระยะการแข่งขันสีเหลือง, ความชันเป็น 3D, ทางตรง/โค้ง, จุดปล่อยตัวและเส้นชัย, ลูกศร chevron วิ่งตามทิศทางการแข่ง (เปิดปิดได้ระหว่างกล้องหมุน) กล่องข้อมูลด้านล่าง (สนาม, ระยะและโค้ง, สถิติ, อากาศและสภาพสนาม) และ **modal ประวัติ** ที่เลือกเหตุการณ์แล้วเล่นวิดีโอไฮไลต์ เสียงค่อยๆ ดังขึ้น จบแล้วค่อยๆ เบาลงและยุบกลับเข้าการ์ด
+2. **ฉากแนะนำม้า (THE FIELD)**: ทีละตัวตามซอง ชื่อจ็อกกี้ + น้ำหนัก, เบอร์ + สีเสื้อ + ชื่อม้า, SIRE × DAM (by BMS), น้ำหนักม้า, รูปจ็อกกี้ด้านขวา และซองปล่อยตัวที่เลื่อนไปซองของม้าตัวนั้น
+3. **ฉาก STARTING GATE**: ม้าทุกตัวเรียงจากบนลงล่างตามซอง เยื้องสลับซ้ายขวาแบบ F1 (ซอง, เบอร์, สีเสื้อ, ชื่อม้า, น้ำหนักม้า, จ็อกกี้, น้ำหนักจ็อกกี้ เปิดปิดได้ทีละช่อง)
+
+เปลี่ยนฉากด้วยทรานซิชัน **Stripes**: ฉากเก่าเล่นท่าออกก่อน แล้วแถบเฉียงกวาดผ่านเปิดฉากใหม่
 
 | หน้า | URL | ใช้ใน OBS เป็น |
 | --- | --- | --- |
-| Dock | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/dock` | Docks → Custom Browser Docks |
-| หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast-compact/#/overlay` | Sources → Browser ขนาด 1920×1080 (ตัวเดียว) |
+| Dock | `https://rikinozomu.github.io/otamasing-broadcast-intro/#/dock` | Docks → Custom Browser Docks |
+| หน้าจอออกอากาศ | `https://rikinozomu.github.io/otamasing-broadcast-intro/#/overlay` | Sources → Browser ขนาด 1920×1080 (ตัวเดียว) ติ๊ก **Control audio via OBS** ให้เสียงวิดีโอเข้ามิกเซอร์ |
 
 ## ใช้งาน
 
-- หน้าจอออกอากาศแสดงสิ่งที่ **Active** อยู่ใน dock: "หน้าแรก" (รายการแข่งขันทั้งหมด) หรือการ์ดรายชื่อม้าของรายการหนึ่ง เปลี่ยน Active แล้วมีทรานซิชัน (Wipe / Slide / Fade / ไม่มี)
-- แท็บ **ภาพรวม**: ตั้ง Active, นำเข้า JSON (เลือกไฟล์ หรือ "วาง JSON" เป็นข้อความ), ส่งออก (บันทึกไฟล์ หรือ "คัดลอก JSON" เพราะ dock ใน OBS บันทึกไฟล์ไม่ได้ ได้ไฟล์ว่าง), เพิ่มเอง, ลาก ⠿ เรียงลำดับ, ลบ, ตั้งค่าหน้าแรก (Title, Sub title, BG, ไฮไลต์รายการ), คัดลอก URL
-- แท็บ **ม้า**: ข้อมูลม้าแต่ละตัว (รูปม้า, รูปสีเสื้อเจ้าของ, ประเทศที่ฝึก/เกิด, วันเกิด, สีขน, พ่อ/แม่/BMS, เจ้าของ, เทรนเนอร์, สถิติ, เงินรางวัล, ผลงาน) ตั้งเป็น Active ได้ หน้าบนจอวนเองได้ และเลือกสกุลเงินรางวัลที่แสดงของม้าทุกตัว (ค่าเริ่มต้นตามสกุลเงินของม้าแต่ละตัว)
-- แท็บ **การแข่งขัน**: เลือกรายการไหนก็ได้ (ไม่ต้อง Active) แก้ **ข้อมูล** (รูป, ชื่อ, เลขรอบ, เวลา, สนาม, พื้น, ระยะ, เกรด, Class, หน้ารายชื่อม้าบนจอ (กดเลขหน้า / วนหน้าอัตโนมัติ), ไฮไลต์ม้า (เปิดหน้าที่มีม้าตัวนั้นให้), ตารางม้า 2–30 ตัว พร้อมธง) และ **สไตล์** ของรายการนั้น (สี DRAW/NO. แบบ JRA / อเมริกา / ไม่มีสี / Custom, ป้ายเกรด, เปิด/ปิดแต่ละส่วน)
-- ข้อมูลเก็บใน localStorage ของเบราว์เซอร์ (รูปเก็บใน IndexedDB ชื่อ `image/ปีเดือนวันเวลามิลลิวินาที.นามสกุล` และไฟล์ JSON เก็บชื่อนี้ไว้; ย้ายพร้อมรูปได้ด้วยไฟล์ .zip จากปุ่ม "บันทึก .zip พร้อมรูป") ครั้งแรกจะมีข้อมูลตัวอย่างให้ dock กับหน้าจอใน OBS ใช้ที่เก็บเดียวกันจึงซิงก์กันทันที แต่ OBS แยกจาก Chrome ปกติ ถ้าเตรียมข้อมูลใน Chrome ให้ส่งออก JSON แล้วนำเข้าใน OBS
-- รูปแบบไฟล์ JSON: [docs/race-json.md](docs/race-json.md), ตัวอย่าง [docs/example-race.json](docs/example-race.json), JSON Schema [schema/race.schema.json](schema/race.schema.json)
+- หน้าจอออกอากาศแสดงสิ่งที่ **Active** อยู่ใน dock แท็บ **ภาพรวม** แต่ละรายการมีปุ่ม "สนาม" "แนะนำ" "Gate" ตั้งฉาก Intro เป็น Active ได้เลย และใต้รายการที่ Active มีปุ่มลัด (เล่นใหม่, เปิด/ปิดประวัติ, ความชัน 3D, ม้าตัวก่อน/ถัดไป, หน้าของ Gate)
+- แท็บ **การแข่งขัน** มีส่วน **สนาม** (สนามและลู่, สิ่งที่แสดงบนสนาม 3D, กล่องข้อมูล, สถิติ, อากาศ: กรอกเองหรือกด "ดึงพยากรณ์ ณ เวลาออกตัว"), **ประวัติ** (เพิ่มเหตุการณ์ เลือกวิดีโอ เลือก/เล่น/หยุดบนจอ), **แนะนำตัว** และ **Starting Gate**
+- แท็บ **ม้า**: พ่อ แม่ BMS และสีเสื้อของม้า (ฉากแนะนำม้าใช้ชื่อม้าจับคู่) แท็บ **จ็อกกี้**: รูปจ็อกกี้ (PNG ตัดพื้นหลัง) ปุ่ม "เพิ่มทั้งหมด" ดึงชื่อจ็อกกี้จากตารางม้าให้
+- เวลาออกตัวในไฟล์เป็น **เวลาไทย** (JRA = เวลาญี่ปุ่น − 2 ชม.)
+- ข้อมูลเก็บใน localStorage (key `otamasing-broadcast-intro/v1`) รูปและวิดีโอเก็บใน IndexedDB ของเบราว์เซอร์ ย้ายเครื่องด้วย .zip จากปุ่ม "บันทึก .zip พร้อมรูป" (ติ๊กใส่วิดีโอได้)
+- รูปแบบไฟล์ JSON: [docs/race-json.md](docs/race-json.md), ตัวอย่าง [docs/example-race.json](docs/example-race.json), Queen Elizabeth II Cup 2026 [docs/qe2-cup-2026.json](docs/qe2-cup-2026.json), JSON Schema [schema/race.schema.json](schema/race.schema.json)
+- 3D ต้องเปิด hardware acceleration ใน OBS (Settings → Advanced → Sources → Enable Browser Source Hardware Acceleration)
 
 ## พัฒนา
 
 ```bash
 npm ci
 npm run dev          # http://localhost:5173/#/dock และ #/overlay
-npm test             # Vitest (กฎซอง JRA, สี, schema, import/export)
+npm test             # Vitest (กฎซอง, สนาม, intro, schema, import/export)
 npm run test:e2e     # Playwright เปิด dock + overlay พร้อมกัน
-npm run schema       # สร้าง schema/race.schema.json ใหม่จาก src/lib/model.ts
+npm run schema       # สร้าง schema/race.schema.json ใหม่
+python3 scripts/venues/build_venue.py kyoto --plot   # สร้างข้อมูลสนามจาก OpenStreetMap (pip install shapely matplotlib)
+python3 scripts/globe/build_globe.py                 # สร้างเส้นโลก public/globe/world.json จาก Natural Earth
 ```
 
-Stack: Vite + React + TypeScript, [Tailwind CSS v4](https://tailwindcss.com) (สีและฟอนต์จาก design system อยู่ใน `@theme` ของ `src/styles/app.css` ไม่มี palette ตั้งต้นของ Tailwind) และ [Motion](https://motion.dev) สำหรับทรานซิชันและไฮไลต์
+Stack: Vite + React + TypeScript, [Tailwind CSS v4](https://tailwindcss.com), [Motion](https://motion.dev) และ [three.js](https://threejs.org) (โลกและสนาม 3D)
 
 | โฟลเดอร์ | มีอะไร |
 | --- | --- |
-| `src/overlay/` | หน้าจอออกอากาศ: `LiveScene` (Active + ทรานซิชัน), `RacecardScene` (การ์ดรายชื่อม้า), `ResultScene` (ผลการแข่งขัน), `RaceBackdrop` (รูป โลโก้ ชื่อรายการ ที่สองหน้านั้นใช้ร่วมกัน), `RaceListScene` (หน้าแรก), `Highlight` (แถบไฮไลต์), `Stage` (ย่อขยาย 1920×1080) |
-| `src/dock/` | Dock: `RacesTab`, `EditTab`, `ResultPanel` (กรอกผล ล็อค เลือกหน้า), `FlagPicker`, `ExportPanel` (บันทึกไฟล์ / คัดลอก JSON) |
-| `src/components/` | ใช้ร่วมกันทั้งสองฝั่ง: `Logo`, `Flag`, `Button`, `Switch`, `Field`, `Section` |
-| `src/lib/` | ข้อมูลและกฎ: `model` (schema), `store`, `images`, `colors` (สีซอง/เบอร์), `labels` (ป้ายเกรด, Fav), `results` (แบ่งหน้าผล + ล็อค), `nations`, `flags` |
+| `src/overlay/intro/` | ฉาก Intro: `CourseScene` + `course3d` (three.js), `HistoryModal`, `RunnerScene`, `GridScene`, `IntroHeader`, `WeatherIcon` |
+| `src/overlay/` | `LiveScene` (Active + ทรานซิชัน รวม Stripes), ฉากของ compact (`RacecardScene`, `ResultScene`, `RaceListScene`, `HorseScene`) |
+| `src/dock/` | Dock: `RacesTab`, `EditTab`, `HorsesTab`, `JockeysTab`, `intro/` (แผงสนาม ประวัติ แนะนำตัว Starting Gate และปุ่มลัด) |
+| `src/lib/` | `model` (schema), `introSchema`, `intro` (ลำดับซอง, พยากรณ์อากาศ), `venues` (ระยะ โค้ง ความชันของสนาม), `store`, `images` |
+| `src/venues/` | ข้อมูลสนาม (สร้างจาก `scripts/venues/build_venue.py`) |
 
 ทุก PR รัน CI (typecheck, Vitest, Playwright) และ merge เข้า `main` แล้ว deploy ขึ้น GitHub Pages ให้เอง
 
-ฟอนต์ Otamasing Display / Otamasing Sans (OFL) อยู่ใน `public/fonts` ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)
+## ที่มาของข้อมูล
+
+- รูปสนาม: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL) ตัวเลขสนาม (ความยาวรอบ ทางตรง ความชัน) และสถิติ: JRA
+- เส้นโลก: [Natural Earth](https://www.naturalearthdata.com) (public domain)
+- ฟอนต์ Otamasing Display / Otamasing Sans (OFL) อยู่ใน `public/fonts` ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)

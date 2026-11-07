@@ -4,14 +4,15 @@
  * Changes reach other pages through the storage event, a BroadcastChannel, and a 1 s poll as a fallback.
  */
 import { useSyncExternalStore } from "react";
-import { activeExists, HOME, newPhotos, newCard, newResult, type AppData } from "./model";
+import { activeExists, HOME, newId, newPhotos, newCard, newResult, type AppData } from "./model";
+import { IntroSchema, type Intro } from "./introSchema";
 import { sampleData } from "./sample";
 import { HOME_BG, raceImageKey } from "./images";
 import { horsePhotoKey, newHorseSettings, newHorseView, silksKey } from "./horses";
 
 // own keys: this site shares the rikinozomu.github.io origin (and so its storage) with otamasing-broadcast
-export const STORAGE_KEY = "otamasing-broadcast-compact/v1";
-const CHANNEL = "otamasing-broadcast-compact";
+export const STORAGE_KEY = "otamasing-broadcast-intro/v1";
+const CHANNEL = "otamasing-broadcast-intro";
 
 let raw: string | null | undefined;
 let cache: AppData | undefined;
@@ -42,6 +43,7 @@ export function getData(): AppData {
   } else raw = r;
   const data = d as AppData;
   data.images ??= {};
+  data.jockeys ??= [];
   // data saved before the horse tab
   data.horses ??= [];
   data.horseSettings = { ...newHorseSettings(), ...data.horseSettings };
@@ -69,9 +71,19 @@ export function getData(): AppData {
     // one picture per race before: it becomes the racecard's first picture
     r.photos ??= { ...newPhotos(), card: { ...newPhotos().card, keys: data.images[raceImageKey(r.id)] ? [raceImageKey(r.id)] : [] } };
     for (const h of r.runners) { h.finish ??= null; h.outcome ??= null; h.time ??= ""; h.margin ??= ""; }
+    // races from before the intro (e.g. a compact file pasted in) get the intro's defaults; newer fields fill in too
+    r.intro = fillIntro(r.intro);
   }
   cache = data;
   return cache;
+}
+
+/** An intro with every field present (defaults for the missing ones) and an id on every history moment. */
+export function fillIntro(x: unknown): Intro {
+  const res = IntroSchema.safeParse(x ?? {});
+  const intro = (res.success ? res.data : IntroSchema.parse({})) as Intro;
+  intro.history.items = intro.history.items.map((h) => ({ ...h, id: h.id ?? newId() }));
+  return intro;
 }
 
 let channel: BroadcastChannel | null = null;

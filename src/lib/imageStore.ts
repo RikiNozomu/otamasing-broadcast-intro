@@ -1,6 +1,6 @@
 /** Adding, removing and renaming stored pictures, keeping the data's list of pictures (`images`) in step. */
 import { clearImages, deleteImage, getImage, imageOk, putImage } from "./images";
-import { imageName, imageRefs, isImageName, mapImageRefs } from "./imageRefs";
+import { imageName, imageRefs, isImageName, mapImageRefs, videoName } from "./imageRefs";
 import { getData, update } from "./store";
 import type { FileOutput } from "./model";
 
@@ -9,6 +9,27 @@ export async function storeImage(f: File): Promise<string> {
   const name = imageName(f);
   await putImage(name, f);
   return name;
+}
+
+/** Store a video under a new video/<date-time>.<ext> name; also returns its length in seconds (null if unknown). */
+export async function storeVideo(f: File): Promise<{ name: string; duration: number | null }> {
+  const name = videoName(f);
+  await putImage(name, f);
+  return { name, duration: await videoDuration(f) };
+}
+
+/** Length of a video file in seconds, read from its metadata (null when the browser can't read it). */
+export function videoDuration(f: Blob): Promise<number | null> {
+  return new Promise((res) => {
+    const url = URL.createObjectURL(f);
+    const v = document.createElement("video");
+    const done = (x: number | null) => { URL.revokeObjectURL(url); res(x); };
+    v.preload = "metadata";
+    v.onloadedmetadata = () => done(Number.isFinite(v.duration) && v.duration > 0 ? Math.round(v.duration * 10) / 10 : null);
+    v.onerror = () => done(null);
+    setTimeout(() => done(null), 8000);
+    v.src = url;
+  });
 }
 
 /** Delete these pictures from the browser unless the data still refers to them (after the change that let go of them). */

@@ -34,7 +34,7 @@ function Picture({ k, rev }: { k: string; rev: number | undefined }) {
 }
 
 /** The scene's pictures full screen (a slideshow when there are several) under a navy gradient; a blue glow when there is none. */
-export function RacePhoto({ photos }: { photos: PhotoSet }) {
+export function RacePhoto({ photos, logo = true }: { photos: PhotoSet; logo?: boolean }) {
   const data = useData();
   // pictures that are not in this browser (e.g. after importing a file) are skipped
   const set = { ...photos, keys: photos.keys.filter((k) => data.images[k]) };
@@ -48,7 +48,7 @@ export function RacePhoto({ photos }: { photos: PhotoSet }) {
       </AnimatePresence>
       {/* the filter: darker at the top behind the title and towards the bottom, the picture shows through the middle */}
       <div data-testid="photo-filter" className="absolute inset-0 bg-[linear-gradient(180deg,rgb(0_21_125/.92)_0%,rgb(0_21_125/.62)_30%,rgb(0_21_125/.55)_60%,rgb(0_10_70/.88)_100%)]" />
-      <Logo className="absolute top-[34px] right-[60px] w-40" />
+      {logo && <Logo className="absolute top-[34px] right-[60px] w-40" />}
     </>
   );
 }

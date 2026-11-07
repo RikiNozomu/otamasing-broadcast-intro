@@ -4,15 +4,20 @@
  * and the data (and so the exported JSON) refers to it by that name.
  */
 
-/** What holds picture names: races' slideshows, horses' slideshows and uploaded silks, the home page background. */
+/**
+ * What holds picture (and video) names: races' slideshows and history videos, horses' slideshows and uploaded
+ * silks, jockeys' photos, the home page background.
+ */
 type Holder = {
-  races?: { photos: { card: { keys: string[] }; result: { keys: string[] } } }[];
+  races?: { photos: { card: { keys: string[] }; result: { keys: string[] } }; intro?: { history?: { items?: { video?: string | null }[] } } }[];
   horses?: { photos: { keys: string[] }; silksImage?: string | null }[];
+  jockeys?: { photo?: string | null }[];
   home?: { background?: string | null };
 };
 
 const MIME_EXT: Record<string, string> = {
   "image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp", "image/svg+xml": "svg", "image/avif": "avif", "image/bmp": "bmp",
+  "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov", "video/ogg": "ogv",
 };
 
 /** Type of a picture from its name's extension (svg needs the right type to show). */
@@ -42,12 +47,23 @@ export function imageName(f: { name?: string; type?: string }, now = Date.now())
   return `image/${stamp(last)}.${extOf(f)}`;
 }
 
-export const isImageName = (k: string) => /^image\/\d{17}\.[a-z0-9]+$/.test(k);
+/** A new video name: `video/<date-time>.<ext>`, the same clock as pictures. */
+export function videoName(f: { name?: string; type?: string }, now = Date.now()): string {
+  last = Math.max(now, last + 1);
+  return `video/${stamp(last)}.${extOf({ ...f, type: f.type ?? "video/mp4" })}`;
+}
+
+export const isImageName = (k: string) => /^(image|video)\/\d{17}\.[a-z0-9]+$/.test(k);
+export const isVideoName = (k: string) => k.startsWith("video/");
 
 /** Every picture name the data refers to (each once). */
 export function imageRefs(d: Holder): string[] {
   const out = new Set<string>();
-  for (const r of d.races ?? []) for (const k of [...r.photos.card.keys, ...r.photos.result.keys]) out.add(k);
+  for (const r of d.races ?? []) {
+    for (const k of [...r.photos.card.keys, ...r.photos.result.keys]) out.add(k);
+    for (const h of r.intro?.history?.items ?? []) if (h.video) out.add(h.video);
+  }
+  for (const j of d.jockeys ?? []) if (j.photo) out.add(j.photo);
   for (const h of d.horses ?? []) {
     for (const k of h.photos.keys) out.add(k);
     if (h.silksImage) out.add(h.silksImage);
@@ -62,7 +78,12 @@ export function mapImageRefs<T extends Holder>(d: T, fn: (k: string) => string |
   const one = (k: string | null | undefined) => (k ? fn(k) : k ?? null);
   return {
     ...d,
-    ...(d.races && { races: d.races.map((r) => ({ ...r, photos: { ...r.photos, card: { ...r.photos.card, keys: keys(r.photos.card.keys) }, result: { ...r.photos.result, keys: keys(r.photos.result.keys) } } })) }),
+    ...(d.races && { races: d.races.map((r) => ({
+      ...r,
+      photos: { ...r.photos, card: { ...r.photos.card, keys: keys(r.photos.card.keys) }, result: { ...r.photos.result, keys: keys(r.photos.result.keys) } },
+      ...(r.intro?.history?.items && { intro: { ...r.intro, history: { ...r.intro.history, items: r.intro.history.items.map((h) => ({ ...h, video: one(h.video) })) } } }),
+    })) }),
+    ...(d.jockeys && { jockeys: d.jockeys.map((j) => ({ ...j, photo: one(j.photo) })) }),
     ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys) }, ...("silksImage" in h && { silksImage: one(h.silksImage) }) })) }),
     ...(d.home && { home: { ...d.home, ...("background" in d.home && { background: one(d.home.background) }) } }),
   };

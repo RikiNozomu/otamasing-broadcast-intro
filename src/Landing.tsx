@@ -12,8 +12,8 @@ export function Landing() {
   return (
     <main className="mx-auto grid max-w-[1100px] gap-5 px-4 pt-8 pb-14">
       <header>
-        <h1 className="m-0 mb-2 font-display text-[44px] leading-none font-extrabold uppercase">โอตะม้าซิ่ง Broadcast Compact</h1>
-        <p className="m-0 max-w-[70ch] text-ink-muted">แผงควบคุมใน OBS (Custom Browser Dock) กับหน้าจอออกอากาศ (Browser Source) สำหรับรายชื่อม้าแข่งและรายการแข่งขัน ข้อมูลเก็บในเบราว์เซอร์ของเครื่องนี้เท่านั้น</p>
+        <h1 className="m-0 mb-2 font-display text-[44px] leading-none font-extrabold uppercase">โอตะม้าซิ่ง Broadcast Intro</h1>
+        <p className="m-0 max-w-[70ch] text-ink-muted">แผงควบคุมใน OBS (Custom Browser Dock) กับหน้าจอออกอากาศ (Browser Source) สำหรับฉาก Intro ก่อนการแข่งขันแบบ F1: สนาม 3D และประวัติรายการ, แนะนำม้าทีละตัว, STARTING GATE (และการ์ดรายชื่อม้า ผล หน้าแรก แบบ broadcast compact) ข้อมูลเก็บในเบราว์เซอร์ของเครื่องนี้เท่านั้น</p>
       </header>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3">
         {links.map(([title, where, hash]) => (
@@ -24,7 +24,7 @@ export function Landing() {
         ))}
       </div>
       <div className="relative aspect-video w-full overflow-hidden border border-line bg-black"><Stage><LiveScene /></Stage></div>
-      <p className={hintClass}>ข้อมูลใน OBS แยกจาก Chrome ปกติ ถ้าเตรียมข้อมูลใน Chrome ให้กดส่งออก JSON แล้วนำเข้าใน dock ของ OBS · ส่งออกจาก dock ใน OBS ใช้ "คัดลอก JSON" (OBS บันทึกไฟล์ไม่ได้) แล้ววางในโปรแกรมแก้ข้อความ หรือในช่อง "วาง JSON" · รูปแบบไฟล์ JSON ดูได้ที่ <a href="https://github.com/RikiNozomu/otamasing-broadcast-compact/blob/main/docs/race-json.md">docs/race-json.md</a></p>
+      <p className={hintClass}>ข้อมูลใน OBS แยกจาก Chrome ปกติ ถ้าเตรียมข้อมูลใน Chrome ให้กดส่งออก JSON แล้วนำเข้าใน dock ของ OBS · ส่งออกจาก dock ใน OBS ใช้ "คัดลอก JSON" (OBS บันทึกไฟล์ไม่ได้) แล้ววางในโปรแกรมแก้ข้อความ หรือในช่อง "วาง JSON" · ใน OBS ติ๊ก "Control audio via OBS" ที่ Browser Source ให้เสียงวิดีโอไฮไลต์เข้ามิกเซอร์ และเปิด Browser Source Hardware Acceleration สำหรับ 3D · รูปแบบไฟล์ JSON ดูได้ที่ <a href="https://github.com/RikiNozomu/otamasing-broadcast-intro/blob/main/docs/race-json.md">docs/race-json.md</a></p>
     </main>
   );
 }

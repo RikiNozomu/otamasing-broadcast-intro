@@ -1,7 +1,9 @@
 /** Tab "ภาพรวม": pick Active (home or a race), import/export, order, delete, home page settings, URL. */
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
-import { BLANK, exportFile, HOME, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type ParseResult, type Race, type Transition } from "../lib/model";
+import { BLANK, exportFile, HOME, introOf, mergeImport, newPhotos, newCard, newResult, parseActive, resultOf, newId, newStyle, parseFile, TRANSITIONS, type AppData, type IntroView, type ParseResult, type Race, type Transition } from "../lib/model";
+import { newIntro } from "../lib/introSchema";
+import { QuickIntro, INTRO_LABEL } from "./intro/QuickIntro";
 import { getData, setData, update, updateRace, useData } from "../lib/store";
 import { checkImportImages, clearAllImages, dropUnused, storeImage } from "../lib/imageStore";
 import { isZip, readBundle } from "../lib/bundle";
@@ -20,7 +22,7 @@ import { Section, hintClass } from "../components/Section";
 import { Switch } from "../components/Switch";
 import type { Toast } from "./Dock";
 
-const TRANSITION_LABEL: Record<Transition, string> = { wipe: "Wipe (แถบเหลืองกวาดจากซ้าย)", slide: "Slide (เลื่อนเข้าจากขวา)", fade: "Fade (จางเข้า)", none: "ไม่มี (ตัดทันที)" };
+const TRANSITION_LABEL: Record<Transition, string> = { stripes: "Stripes (แถบเฉียงแบบ F1 ฉากเก่าออกก่อน)", wipe: "Wipe (แถบเหลืองกวาดจากซ้าย)", slide: "Slide (เลื่อนเข้าจากขวา)", fade: "Fade (จางเข้า)", none: "ไม่มี (ตัดทันที)" };
 const stamp = () => new Date().toISOString().slice(0, 10).replaceAll("-", "");
 const rowGrid = "grid grid-cols-[22px_minmax(0,1fr)_30px] gap-1";
 const sideBtn = "border border-line bg-studio";
@@ -115,7 +117,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     const id = newId();
     update((x) => ({
       ...x,
-      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null })) }],
+      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), intro: newIntro(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null })) }],
     }));
     onEdit(id);
   };
@@ -167,7 +169,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
         <Button variant="primary" onClick={() => fileRef.current?.click()}>นำเข้า JSON / .zip</Button>
         <input ref={fileRef} type="file" accept="application/json,.json,application/zip,.zip" hidden data-testid="import-file" onChange={(e) => { pickFile(e.target.files?.[0]); e.target.value = ""; }} />
         <Button onClick={() => { setPending(null); setPaste((p) => (p == null ? "" : null)); }} aria-expanded={paste != null}>วาง JSON</Button>
-        <Button onClick={() => setExportName((x) => (x ? null : `otamasing-broadcast-compact-${stamp()}.json`))} aria-expanded={!!exportName}>ส่งออก</Button>
+        <Button onClick={() => setExportName((x) => (x ? null : `otamasing-broadcast-intro-${stamp()}.json`))} aria-expanded={!!exportName}>ส่งออก</Button>
         <Button onClick={addRace}>+ เพิ่มเอง</Button>
       </div>
       <AnimatePresence>
@@ -218,6 +220,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
           const name = `${x.round} ${x.name}`.trim();
           const a = parseActive(d.active);
           const on = a.raceId === x.id, resultOn = on && a.view === "result";
+          const introOn = on && (a.view === "course" || a.view === "runner" || a.view === "grid") ? a.view : null;
           return confirmDel === x.id ? (
             <motion.div layout key={x.id} className="flex items-center justify-between gap-1.5 border border-danger-ink px-2.5 py-2 text-[13px]">
               <span>ลบ {name}? ลบแล้วกู้คืนไม่ได้</span>
@@ -237,12 +240,20 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
               onDrop={(e) => { e.preventDefault(); if (dragFrom !== null) move(dragFrom, i); setDragFrom(null); setOver(null); }}
               onDragEnd={() => { setDragFrom(null); setOver(null); }}>
               <span className="grid cursor-grab place-items-center text-base text-ink-muted select-none" aria-hidden="true">⠿</span>
-              <ActiveRow id={x.id} on={on} badge={resultOn ? "ACTIVE · ผล" : "ACTIVE"} round={x.round || "–"} title={x.name} label={`ตั้ง ${name} เป็น Active`} onPick={() => setActive(x.id)}
+              <ActiveRow id={x.id} on={on} badge={resultOn ? "ACTIVE · ผล" : introOn ? `ACTIVE · ${INTRO_LABEL[introOn]}` : "ACTIVE"} round={x.round || "–"} title={x.name} label={`ตั้ง ${name} เป็น Active`} onPick={() => setActive(x.id)}
                 facts={[x.date.replaceAll("-", "."), x.course, `${x.surface}${x.distanceM ? ` ${x.distanceM}m` : ""}`, `${x.runners.length} ตัว`].filter(Boolean).join(" · ")}
                 side={
-                  <span className="flex gap-1">
-                    <Button variant={resultOn ? "primary" : "default"} className="px-2.5 py-[3px] text-xs" aria-pressed={resultOn} aria-label={`ตั้งผล ${name} เป็น Active`} onClick={() => setActive(resultOf(x.id))}>ผล</Button>
-                    <Button className="px-3 py-[3px] text-xs" aria-label={`แก้ไข ${name}`} onClick={() => onEdit(x.id)}>แก้ไข</Button>
+                  <span className="grid justify-items-end gap-1">
+                    <span className="flex gap-1">
+                      <Button variant={resultOn ? "primary" : "default"} className="px-2.5 py-[3px] text-xs" aria-pressed={resultOn} aria-label={`ตั้งผล ${name} เป็น Active`} onClick={() => setActive(resultOf(x.id))}>ผล</Button>
+                      <Button className="px-3 py-[3px] text-xs" aria-label={`แก้ไข ${name}`} onClick={() => onEdit(x.id)}>แก้ไข</Button>
+                    </span>
+                    <span className="flex gap-1" data-testid="intro-buttons">
+                      {(["course", "runner", "grid"] as IntroView[]).map((v) => (
+                        <Button key={v} variant={introOn === v ? "primary" : "default"} className="px-2 py-[3px] text-xs" aria-pressed={introOn === v}
+                          aria-label={`ตั้ง${INTRO_LABEL[v]} ${name} เป็น Active`} onClick={() => setActive(introOf(v, x.id))}>{INTRO_LABEL[v]}</Button>
+                      ))}
+                    </span>
                   </span>
                 } />
               <span className="grid grid-rows-[auto_1fr] gap-1">
@@ -251,12 +262,13 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
               </span>
             </div>
             {resultOn && <QuickResultPages race={x} />}
-            {on && !resultOn && <CardPageButtons race={x} className="mt-1 ml-[26px]" testId="quick-card-pages" />}
+            {on && !resultOn && !introOn && <CardPageButtons race={x} className="mt-1 ml-[26px]" testId="quick-card-pages" />}
+            {introOn && <QuickIntro race={x} view={introOn} />}
             </motion.div>
           );
         })}
       </div>
-      <p className={hintClass}>กดแถวไหนก็ได้เพื่อตั้งเป็น Active จอจะเปลี่ยนพร้อมทรานซิชัน · กดแถวรายการ = การ์ดรายชื่อม้า, ปุ่ม "ผล" = หน้าผลการแข่งขัน, "หน้าเปล่า" = เอากราฟิกออกจากจอ · ลาก ⠿ (หรือกด ▲) เพื่อเรียงลำดับ หน้าแรกเรียงตามนี้ · ข้อมูลเก็บในเครื่องนี้ ย้ายเครื่องใช้ส่งออก/นำเข้า JSON</p>
+      <p className={hintClass}>กดแถวไหนก็ได้เพื่อตั้งเป็น Active จอจะเปลี่ยนพร้อมทรานซิชัน · กดแถวรายการ = การ์ดรายชื่อม้า, ปุ่ม "ผล" = หน้าผลการแข่งขัน, "สนาม" / "แนะนำ" / "Gate" = ฉาก intro (สนาม 3D, แนะนำผู้เข้าแข่งทีละตัว, Starting Gate), "หน้าเปล่า" = เอากราฟิกออกจากจอ · ลาก ⠿ (หรือกด ▲) เพื่อเรียงลำดับ หน้าแรกเรียงตามนี้ · ข้อมูลเก็บในเครื่องนี้ ย้ายเครื่องใช้ส่งออก/นำเข้า JSON</p>
 
       <Section title={<label htmlFor="trans">ทรานซิชันตอนเปลี่ยน Active</label>}>
         <select id="trans" className={inputClass} value={d.transition} onChange={(e) => update((x) => ({ ...x, transition: e.target.value as Transition }))}>
