@@ -55,7 +55,7 @@ export function videoStatusText(s: VideoStatus | null, play: { id: string; at: n
   switch (s.state) {
     case "loading": return { text: "จอ: กำลังโหลดวิดีโอ…", bad: false };
     case "playing": return { text: `จอ: เล่นอยู่ ${mmss(s.t)}`, bad: false };
-    case "muted": return { text: `จอ: เล่นอยู่ ${mmss(s.t)} แต่ไม่มีเสียง (เบราว์เซอร์ไม่ให้เล่นเสียงเองจนกว่าจะคลิกที่หน้า overlay สักครั้ง ใน OBS ไม่เป็น)`, bad: true };
+    case "muted": return { text: `จอ: เล่นอยู่ ${mmss(s.t)} แต่ไม่มีเสียง เพราะเบราว์เซอร์ไม่ให้เล่นเสียงจนกว่าจะมีคนคลิกที่หน้า overlay คลิกหน้านั้นหนึ่งครั้งแล้วเสียงจะค่อยๆ ดังขึ้น (ใน OBS ไม่เป็น)`, bad: true };
     case "hidden": return { text: "จอ: หน้า overlay ถูกซ่อนอยู่ (แท็บหรือหน้าต่างไม่ได้เปิดดู) วิดีโอจะเริ่มเมื่อเปิดดูหน้านั้น", bad: true };
     case "missing": return { text: "จอ: ไม่พบไฟล์วิดีโอในเบราว์เซอร์ของจอ เลือกวิดีโอใหม่จาก dock ที่อยู่เบราว์เซอร์เดียวกับจอ (เช่น dock ใน OBS) หรือนำเข้าไฟล์ .zip ที่มีวิดีโอ", bad: true };
     case "unsupported": return { text: `จอ: เปิดไฟล์วิดีโอนี้ไม่ได้ (ชนิดไฟล์หรือ codec ไม่รองรับ เช่น HEVC/H.265 จาก iPhone) แปลงเป็น MP4 (H.264) หรือ WebM แล้วเลือกใหม่${s.detail ? ` · ${s.detail}` : ""}`, bad: true };

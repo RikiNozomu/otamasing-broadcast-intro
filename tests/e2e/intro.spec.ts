@@ -158,6 +158,48 @@ test("history: a file the browser can't open gets a warning in the dock, and the
   await expect(dock.getByTestId("history-screen")).toContainText("เปิดไฟล์วิดีโอนี้ไม่ได้", { timeout: 20_000 });
 });
 
+test("history: in a browser that refuses sound until the page is clicked, the video still plays (muted), and a click brings the sound", async ({ context }) => {
+  test.slow();
+  // Chrome's policy, which the test browser doesn't apply by itself: without a click on the page, play() with sound is
+  // refused; a video that starts silent (muted, or at volume 0) may play, and is paused if its sound comes on
+  await context.addInitScript(() => {
+    let clicked = false;
+    document.addEventListener("pointerdown", () => { clicked = true; }, true);
+    const P = HTMLMediaElement.prototype;
+    const muted = Object.getOwnPropertyDescriptor(P, "muted")!, volume = Object.getOwnPropertyDescriptor(P, "volume")!, play = P.play;
+    const silent = (v: HTMLMediaElement) => muted.get!.call(v) || volume.get!.call(v) === 0;
+    const startedSilent = new WeakSet<HTMLMediaElement>();
+    P.play = function (this: HTMLMediaElement) {
+      if (clicked) return play.call(this);
+      if (!silent(this)) return Promise.reject(new DOMException("play() failed because the user didn't interact with the document first.", "NotAllowedError"));
+      startedSilent.add(this);
+      return play.call(this);
+    };
+    const soundOn = (v: HTMLMediaElement) => { if (!clicked && startedSilent.has(v) && !v.paused && !silent(v)) v.pause(); };
+    Object.defineProperty(P, "muted", { get() { return muted.get!.call(this); }, set(x) { muted.set!.call(this, x); soundOn(this); } });
+    Object.defineProperty(P, "volume", { get() { return volume.get!.call(this); }, set(x) { volume.set!.call(this, x); soundOn(this); } });
+  });
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("button", { name: "ตั้งสนาม 11R Sample Cup เป็น Active" }).click();
+  await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
+  await dock.locator("#sub-history").click();
+  await dock.getByRole("button", { name: "A photo finish", exact: true }).click();
+  await dock.getByTestId("history-video-file").setInputFiles(fixture("clip-10s.webm"));
+  await expect(dock.getByTestId("history-video-name")).toContainText("0:10");
+  await dock.getByRole("button", { name: "เล่น A photo finish" }).click();
+  const video = live(overlay).getByTestId("history-video");
+  // it plays, muted, and the dock says why there's no sound
+  await expect(video).toHaveAttribute("data-muted", "true", { timeout: 20_000 });
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => !v.paused && v.currentTime > 0.5), { timeout: 10_000 }).toBe(true);
+  await expect(dock.getByTestId("history-screen")).toContainText("ไม่มีเสียง");
+  // one click on the overlay page: the sound fades in and it keeps playing
+  await overlay.mouse.click(960, 100);
+  await expect(video).not.toHaveAttribute("data-muted", "true");
+  await expect(video).toHaveAttribute("data-volume", /^0\.[3-9]|^1\.00$/, { timeout: 5000 });
+  expect(await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, paused: v.paused }))).toEqual({ muted: false, paused: false });
+  await expect(dock.getByTestId("history-screen")).toHaveText(/^จอ: เล่นอยู่ 0:0\d$/);
+});
+
 test("runner intro goes through the field in gate order; STARTING GATE lists every runner top to bottom", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "ตั้งแนะนำ 11R Sample Cup เป็น Active" }).click();
