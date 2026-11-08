@@ -188,7 +188,7 @@ export function CourseScene({ race }: { race: Race }) {
         <IntroHeader race={race} tag="THE COURSE" />
       </motion.div>
       <AnimatePresence>
-        {found && !modal && <motion.div key={`panels${race.intro.course.since}`} exit={{ opacity: 0, y: 60, transition: { duration: 0.35 } }}><Panels race={race} venue={found.venue} track={found.track} delay={delay} /></motion.div>}
+        {found && !modal && race.intro.course.showPanels && <motion.div key={`panels${race.intro.course.since}`} exit={{ opacity: 0, y: 60, transition: { duration: 0.35 } }}><Panels race={race} venue={found.venue} track={found.track} delay={delay} /></motion.div>}
       </AnimatePresence>
       <AnimatePresence>{modal && <HistoryModal key="history" race={race} />}</AnimatePresence>
     </div>

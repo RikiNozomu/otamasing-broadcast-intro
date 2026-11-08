@@ -9,12 +9,7 @@ import { Button } from "../../components/Button";
 import { Field, inputClass } from "../../components/Field";
 import { Section, hintClass } from "../../components/Section";
 import { Switch } from "../../components/Switch";
-import { setIntro } from "./shared";
-
-const FOCUS_LABEL: Record<Focus, string> = {
-  none: "ไม่ไฮไลต์", straights: "ทางตรงทั้งหมด", corners: "ทางโค้งทั้งหมด", home: "ทางตรงหน้าอัฒจันทร์ (Home)", back: "ทางตรงฝั่งตรงข้าม (Back)",
-  c1: "โค้ง 1", c2: "โค้ง 2", c3: "โค้ง 3", c4: "โค้ง 4",
-};
+import { FOCUS_LABEL, setIntro } from "./shared";
 
 function RecordEditor({ race, which, title }: { race: Race; which: "course" | "race"; title: string }) {
   const r = race.intro.records[which];
@@ -106,6 +101,7 @@ export function CoursePanel({ race }: { race: Race }) {
         </Field>
       </Section>
       <Section title="กล่องข้อมูลด้านล่าง">
+        <Switch on={c.showPanels} label="แสดงกล่องข้อมูล (ปิดแล้วซ่อนทุกกล่องทีเดียว)" testId="show-panels" onToggle={() => setCourse({ showPanels: !c.showPanels })} />
         <Switch on={c.panels.venue} label="ชื่อสนาม ที่ตั้ง ประเทศ + ธง" testId="show-panel-venue" onToggle={() => setPanels("venue")} />
         <Switch on={c.panels.distance} label="ระยะทาง โค้ง ความชัน Back/Home stretch" testId="show-panel-distance" onToggle={() => setPanels("distance")} />
         <Switch on={c.panels.records} label="สถิติสนามและสถิติรายการ" testId="show-panel-records" onToggle={() => setPanels("records")} />

@@ -70,6 +70,8 @@ export const CourseViewSchema = z.object({
   startFinish: z.boolean().default(true),
   chevrons: z.boolean().default(true),
   focus: z.enum(FOCUS).default("none"),
+  /** All the boxes along the bottom at once, keeping which ones are picked (the dock's one-button hide/show). */
+  showPanels: z.boolean().default(true),
   /** Boxes along the bottom: venue, distance facts, records, weather and going. */
   panels: z.object({
     venue: z.boolean().default(true),

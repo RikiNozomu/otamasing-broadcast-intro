@@ -484,6 +484,7 @@ export class CourseView3D {
     const anyFocus = focusIds.size > 0;
     this.host.dataset.elevation = o.elevation ? "on" : "off";
     this.host.dataset.focus = o.focus;
+    this.host.dataset.marks = [o.path && "path", o.startFinish && "start", o.chevrons && "chevrons"].filter(Boolean).join(" ") || "none";
 
     if (this.outlineMat) this.outlineMat.opacity = 0.3 * appear;
     if (this.edgeMat) this.edgeMat.opacity = 0.75 * appear;

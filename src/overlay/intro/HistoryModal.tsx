@@ -62,6 +62,8 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
   const ref = useRef<HTMLVideoElement>(null);
   const ramp = useVolumeRamp();
   const fadingOut = useRef(false);
+  // stopped from the dock: nothing may start a new ramp after that (it would cancel the exit and leave the player on screen)
+  const exiting = useRef(false);
   const [isPresent, safeToRemove] = usePresence();
   // tell the dock how it goes (videoStatus.ts); while playing, at most once a second
   const lastReport = useRef(0);
@@ -96,7 +98,7 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
     v.muted = false;
     // a hidden tab doesn't start videos until it is shown
     if (document.hidden) report("hidden");
-    v.play().then(() => ramp(v, 1, FADE_IN_MS)).catch((e: DOMException) => {
+    v.play().then(() => { if (!exiting.current) ramp(v, 1, FADE_IN_MS); }).catch((e: DOMException) => {
       if (e.name !== "NotAllowedError") return report(failureOf(v.error ?? e).state, failureOf(v.error ?? e).detail);
       // a normal browser may refuse sound without a click (OBS plays it): play muted rather than not at all
       v.muted = true;
@@ -109,9 +111,15 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
   // stopped from the dock: fade the sound out, then let the exit finish
   useEffect(() => {
     if (isPresent) return;
+    exiting.current = true;
     const v = ref.current;
     if (!v) return safeToRemove?.();
-    ramp(v, 0, Math.min(FADE_OUT_MS, 700), () => { v.pause(); safeToRemove?.(); });
+    let gone = false;
+    const finish = () => { if (gone) return; gone = true; v.pause(); safeToRemove?.(); };
+    ramp(v, 0, Math.min(FADE_OUT_MS, 700), finish);
+    // and a timer: animation frames stop in a hidden page, and the player has to go all the same
+    const t = window.setTimeout(finish, 1000);
+    return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPresent]);
 
@@ -119,7 +127,7 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
     const v = ref.current;
     if (!v) return;
     if (Date.now() - lastReport.current >= 1000 && !v.paused) report(v.muted ? "muted" : "playing");
-    if (fadingOut.current || !v.duration) return;
+    if (fadingOut.current || exiting.current || !v.duration) return;
     if (v.duration - v.currentTime <= FADE_OUT_MS / 1000) {
       fadingOut.current = true;
       ramp(v, 0, Math.max(100, (v.duration - v.currentTime) * 1000));

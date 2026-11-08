@@ -3,7 +3,7 @@
  * scene), each with an optional highlight video stored in this browser; open the modal, pick a card, play a video.
  */
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { introOf, newId, type Race } from "../../lib/model";
 import type { HistoryItem } from "../../lib/introSchema";
 import { playingItem } from "../../lib/intro";
@@ -15,19 +15,9 @@ import { Button, buttonClass } from "../../components/Button";
 import { Field, inputClass } from "../../components/Field";
 import { Section, hintClass } from "../../components/Section";
 import { Switch } from "../../components/Switch";
-import { setIntro } from "./shared";
+import { pickHistory, playHistory, setIntro, stopHistory, toggleHistory, useTick } from "./shared";
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
-
-/** Re-render every second while something plays, so "กำลังเล่น" ends when the video does. */
-function useTick(on: boolean) {
-  const [, set] = useState(0);
-  useEffect(() => {
-    if (!on) return;
-    const t = window.setInterval(() => set((x) => x + 1), 1000);
-    return () => window.clearInterval(t);
-  }, [on]);
-}
 
 function ItemEditor({ race, item }: { race: Race; item: HistoryItem }) {
   const [busy, setBusy] = useState(false);
@@ -116,8 +106,8 @@ export function HistoryPanel({ race }: { race: Race }) {
     items.splice(j, 0, m);
     return { ...x, items };
   });
-  const play = (item: HistoryItem) => setH((x) => ({ ...x, open: true, selected: item.id, play: { id: item.id, at: Date.now() } }));
-  const stop = () => setH((x) => ({ ...x, play: null }));
+  const play = (item: HistoryItem) => playHistory(race.id, item.id);
+  const stop = () => stopHistory(race.id);
   return (
     <div className="grid gap-3" role="tabpanel" aria-labelledby="sub-history">
       {!courseOn && (
@@ -127,7 +117,7 @@ export function HistoryPanel({ race }: { race: Race }) {
         </div>
       )}
       <Section title="Modal ประวัติ">
-        <Switch on={h.open} label="เปิด modal ประวัติบนจอ" testId="history-open" onToggle={() => setH((x) => ({ ...x, open: !x.open, play: x.open ? null : x.play }))} />
+        <Switch on={h.open} label="เปิด modal ประวัติบนจอ" testId="history-open" onToggle={() => toggleHistory(race.id)} />
         {playing && (
           <div className="grid gap-1 border border-yellow px-2.5 py-1.5 text-[13px]" role="status" data-testid="history-playing">
             <div className="flex items-center justify-between gap-2">
@@ -152,7 +142,7 @@ export function HistoryPanel({ race }: { race: Race }) {
                   </button>
                   <span className="flex gap-1">
                     <Button className="px-2 py-[3px] text-xs" variant={sel ? "primary" : "default"} aria-pressed={sel} aria-label={`เลือก ${x.title}`}
-                      onClick={() => setH((y) => ({ ...y, open: true, selected: y.selected === x.id ? null : x.id }))}>เลือก</Button>
+                      onClick={() => pickHistory(race.id, x.id)}>เลือก</Button>
                     {x.video && (isPlaying
                       ? <Button className="px-2 py-[3px] text-xs" variant="danger" aria-label={`หยุด ${x.title}`} onClick={stop}>■</Button>
                       : <Button className="px-2 py-[3px] text-xs" aria-label={`เล่น ${x.title}`} onClick={() => play(x)}>▶</Button>)}
