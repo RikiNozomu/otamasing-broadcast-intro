@@ -111,6 +111,8 @@ test("runner intro goes through the field in gate order; STARTING GATE lists eve
   await expect(runner.getByTestId("horse-name")).toHaveText("MORNING GALLOP");
   await expect(runner.getByTestId("jockey-name")).toHaveText("A. SAMPLE");
   await expect(runner.getByTestId("jockey-weight")).toContainText("54.0");
+  // the jockey's flag sits on the white bar, so it gets a navy edge (a white flag like Japan's would vanish)
+  await expect(runner.getByTestId("jockey-flag")).toHaveCSS("box-shadow", "rgb(10, 5, 107) 0px 0px 0px 3px");
   await expect(runner.getByTestId("pedigree")).toContainText(/example sire.*×.*paper princess.*by old champion/i);
   // the change sits right after the weight; the label says what the number is
   await expect(runner.getByTestId("horse-weight")).toContainText(/^440\s*\(-8\)\s*HORSE WEIGHT \(KG\)$/);

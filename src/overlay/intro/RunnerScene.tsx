@@ -103,7 +103,7 @@ function RunnerInfo({ race, h, leaving }: { race: Race; h: Runner; leaving: bool
         initial={{ x: -840 }} animate={leaving ? { x: -840, transition: { duration: 0.3, ease: EASE } } : { x: 0, transition: { duration: 0.5, ease: EASE, delay: 0.2 } }}
         exit={{ x: -840, transition: { duration: 0.28, ease: EASE } }}>
         <div className="flex min-w-0 flex-1 items-center gap-4 bg-white pr-6 pl-[60px] text-navy">
-          {S.show.jockeyFlag && <Flag code={h.jockeyCountry} className="h-[30px] w-[45px] shadow-[0_0_0_1px_rgb(10_5_107/.25)]" />}
+          {S.show.jockeyFlag && <Flag code={h.jockeyCountry} className="h-[30px] w-[45px]" style={{ boxShadow: "0 0 0 3px var(--color-navy)" }} testId="jockey-flag" />}
           <FitText className="font-display text-[54px] font-bold tracking-[.02em]"><span data-testid="jockey-name">{h.jockey.toUpperCase()}</span></FitText>
         </div>
         {h.weight != null && (
