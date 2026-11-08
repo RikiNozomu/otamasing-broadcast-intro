@@ -94,7 +94,8 @@ test("runner intro goes through the field in gate order; STARTING GATE lists eve
   await expect(runner.getByTestId("jockey-name")).toHaveText("A. SAMPLE");
   await expect(runner.getByTestId("jockey-weight")).toContainText("54.0");
   await expect(runner.getByTestId("pedigree")).toContainText(/example sire.*×.*paper princess.*by old champion/i);
-  await expect(runner.getByTestId("horse-weight")).toContainText("440");
+  // the change sits right after the weight; the label says what the number is
+  await expect(runner.getByTestId("horse-weight")).toContainText(/^440\s*\(-8\)\s*HORSE WEIGHT \(KG\)$/);
   await expect(scene.getByTestId("gate-band")).toHaveAttribute("data-stall", "1");
   const quick = dock.getByTestId("quick-runner");
   for (const no of ["2", "3", "4", "5", "7"]) { // 6 is scratched

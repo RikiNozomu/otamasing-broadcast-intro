@@ -65,7 +65,8 @@ export const CourseViewSchema = z.object({
   path: z.boolean().default(true),
   elevation: z.boolean().default(false),
   /** How many times the heights are stretched in 3D (a 4 m hill on a 2 km course is invisible at 1x). */
-  elevationScale: z.number().min(1).max(100).default(25),
+  // 5×: Kyoto's 3–4 m hill reads as a gentle rise; 25× (the old default) made it look like a mountain
+  elevationScale: z.number().min(1).max(100).default(5),
   startFinish: z.boolean().default(true),
   chevrons: z.boolean().default(true),
   focus: z.enum(FOCUS).default("none"),

@@ -151,7 +151,8 @@ describe("files with the intro", () => {
     const res = parseFile(read("docs/example-race.json"));
     expect(res.ok).toBe(true);
     if (!res.ok) return;
-    expect(res.data.races[0].intro.course).toMatchObject({ globe: true, path: true, venue: null });
+    // the hill is raised 5× by default: Kyoto's 3–4 m reads as a low rise, not a mountain
+    expect(res.data.races[0].intro.course).toMatchObject({ globe: true, path: true, venue: null, elevation: false, elevationScale: 5 });
     expect(res.data.races[0].intro.grid.perPage).toBe(18);
     expect(res.data.jockeys).toEqual([]);
   });

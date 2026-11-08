@@ -91,7 +91,10 @@ export function CoursePanel({ race }: { race: Race }) {
         <Switch on={c.elevation} label="แสดงความชันเป็น 3D" testId="course-elevation" onToggle={() => setCourse({ elevation: !c.elevation })} />
         {c.elevation && (
           <Field id="c-elev" label={`ขยายความสูง ×${c.elevationScale}`}>
-            <input id="c-elev" type="range" min={5} max={60} step={1} value={c.elevationScale} onChange={(e) => setCourse({ elevationScale: +e.target.value })} />
+            <div className="grid gap-0.5">
+              <input id="c-elev" type="range" min={1} max={30} step={1} value={c.elevationScale} onChange={(e) => setCourse({ elevationScale: +e.target.value })} />
+              <span className={hintClass}>×1 = สูงจริง (มองแทบไม่เห็น) ค่าเริ่มต้น ×5</span>
+            </div>
           </Field>
         )}
         <Switch on={c.startFinish} label="จุดปล่อยตัว (START) และเส้นชัย (FINISH)" testId="course-startfinish" onToggle={() => setCourse({ startFinish: !c.startFinish })} />

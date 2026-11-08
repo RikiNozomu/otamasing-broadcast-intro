@@ -394,7 +394,7 @@
                         "type": "number",
                         "minimum": 1,
                         "maximum": 100,
-                        "default": 25
+                        "default": 5
                       },
                       "startFinish": {
                         "type": "boolean",

@@ -144,7 +144,7 @@
 | `course.globe` | boolean | `true` | เริ่มจากโลก 3D หมุนเข้ามาแล้วซูมลงสนาม (ปิด = เข้าสนามเลย) |
 | `course.since` | number | `0` | เปลี่ยนค่านี้ = เล่นฉากสนามใหม่ตั้งแต่ต้น (ปุ่ม "เล่นใหม่" ใน dock) |
 | `course.path` | boolean | `true` | ไฮไลต์ลู่ตามระยะการแข่งขันสีเหลือง ตั้งแต่จุดปล่อยตัวถึงเส้นชัย |
-| `course.elevation` / `course.elevationScale` | boolean / 1–100 | `false` / `25` | แสดงความชันเป็น 3D และขยายความสูงกี่เท่า (เนิน 4 ม. บนสนาม 2 กม. ถ้าไม่ขยายจะมองไม่เห็น) |
+| `course.elevation` / `course.elevationScale` | boolean / 1–100 | `false` / `5` | แสดงความชันเป็น 3D และขยายความสูงกี่เท่า (เนิน 3–4 ม. บนสนาม 2 กม. ถ้าไม่ขยายเลยจะมองไม่เห็น ×5 พอให้เห็นเนินเตี้ยๆ) |
 | `course.startFinish` | boolean | `true` | จุดปล่อยตัว (START) และเส้นชัย (FINISH) |
 | `course.chevrons` | boolean | `true` | ลูกศร chevron วิ่งตามทิศทางการแข่ง |
 | `course.focus` | `"none"` `"straights"` `"corners"` `"home"` `"back"` `"c1"`–`"c4"` | `"none"` | ไฮไลต์ทางตรง/โค้ง (สีฟ้า พร้อมป้ายชื่อ) |

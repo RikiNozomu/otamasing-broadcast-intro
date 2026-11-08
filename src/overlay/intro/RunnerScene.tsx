@@ -2,7 +2,7 @@
  * Runner intro (1920x1080), after Nopphorn's sketch: one runner at a time in gate order.
  * Left: the starting gate (a post and a row of stalls; this runner's stall glows with its number and the row
  * slides to it). Right: the jockey's cut-out photo. Bottom: the jockey's name and weight carried on a bar,
- * then the number box, the silks and the horse's name; bottom right SIRE × DAM (by BMS) and the horse's weight.
+ * then the number box, the silks and the horse's name; bottom right SIRE × DAM (by BMS) and the horse's weight with its change, over "HORSE WEIGHT (KG)".
  */
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../../lib/model";
@@ -137,9 +137,13 @@ function RunnerInfo({ race, h, leaving }: { race: Race; h: Runner; leaving: bool
           ) : null}
         </div>
         {h.horseWeight != null && (
-          <div data-testid="horse-weight" className="grid w-[230px] content-center justify-items-center border-l-[3px] border-white/60 font-display leading-none font-bold">
-            <span className="text-[86px]">{h.horseWeight}</span>
-            <span className="text-[22px] tracking-[.14em]">KILOGRAMS{h.horseWeightChange != null ? ` (${signed(h.horseWeightChange)})` : ""}</span>
+          <div data-testid="horse-weight" className="grid w-[230px] content-center justify-items-center gap-1 border-l-[3px] border-white/60 font-display leading-none font-bold">
+            {/* the weight with its change right after it, e.g. 486 (+4) */}
+            <span className="flex items-baseline gap-1.5 whitespace-nowrap">
+              <span className="text-[86px]">{h.horseWeight}</span>
+              {h.horseWeightChange != null && <span data-testid="horse-weight-change" className="text-[36px] font-semibold">({signed(h.horseWeightChange)})</span>}
+            </span>
+            <span className="text-[20px] tracking-[.08em] whitespace-nowrap">HORSE WEIGHT (KG)</span>
           </div>
         )}
       </motion.div>
