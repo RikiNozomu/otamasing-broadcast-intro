@@ -41,6 +41,9 @@ test("course scene: the globe turns in, then the course; options switch while it
   await expect(view).toHaveAttribute("data-focus", "corners");
   await dock.getByTestId("show-panel-records").click();
   await expect(scene.getByTestId("panel-records")).toHaveCount(0);
+  // switched back on, the box comes straight in: the wait for the camera is only at the start of the scene
+  await dock.getByTestId("show-panel-records").click();
+  await expect(scene.getByTestId("panel-records")).toHaveCSS("opacity", "1", { timeout: 4000 });
   // straight to the course without the globe
   await dock.getByTestId("course-globe").click();
   await expect(live(overlay).getByTestId("course-3d")).toHaveAttribute("data-globe", "off");
@@ -78,10 +81,10 @@ test("history: cards in a modal over the course, a picked card's video plays wit
   await expect(player).toHaveCount(0, { timeout: 8000 });
   await expect(modal.locator("[data-testid=history-card][data-item=hist-2]")).toBeVisible();
   await expect(dock.getByTestId("history-playing")).toHaveCount(0, { timeout: 8000 });
-  // closing the modal brings the boxes back
+  // closing the modal brings the boxes straight back (not after the scene's opening wait again)
   await dock.getByTestId("history-open").click();
   await expect(modal).toHaveCount(0);
-  await expect(live(overlay).getByTestId("panel-venue")).toBeVisible();
+  await expect(live(overlay).getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 2500 });
 });
 
 test("runner intro goes through the field in gate order; STARTING GATE lists every runner top to bottom", async ({ context }) => {
