@@ -20,6 +20,12 @@ import { EASE, slant } from "./IntroHeader";
 
 /** Sound fades in over this long at the start, and out over this long before the end (or when stopped). */
 export const FADE_IN_MS = 1200, FADE_OUT_MS = 1200;
+/**
+ * The volume a video starts at, before it fades in. Not 0: Chrome counts a video at volume 0 as muted, lets it start
+ * without a click on the page, then pauses it the moment the fade-in raises the volume ("Unmuting failed and the
+ * element was paused instead…"). Just above 0, a page that may not play sound says so at play(), and we play muted.
+ */
+export const START_VOLUME = 0.01;
 /** At most this many cards side by side; with more, the ones around the picked card. */
 const MAX_CARDS = 5;
 
@@ -87,26 +93,50 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item.video, rev]);
 
+  // a normal browser may refuse sound until the page has had a click (OBS plays it): play muted rather than not at
+  // all, and let the first click on the overlay page bring the sound in
+  const unmuteOnClick = useRef<(() => void) | null>(null);
+  const playMuted = (v: HTMLVideoElement) => {
+    v.muted = true;
+    v.dataset.muted = "true";
+    v.play().catch((e: DOMException) => { const f = failureOf(v.error ?? e); report(f.state, f.detail); });
+    if (unmuteOnClick.current) return;
+    const unmute = () => {
+      if (exiting.current) return;
+      v.muted = false;
+      delete v.dataset.muted;
+      ramp(v, 1, FADE_IN_MS);
+      if (!v.paused) report("playing");
+    };
+    unmuteOnClick.current = unmute;
+    document.addEventListener("pointerdown", unmute, { once: true });
+  };
+  useEffect(() => () => { if (unmuteOnClick.current) document.removeEventListener("pointerdown", unmuteOnClick.current); }, []);
+
   useEffect(() => {
     const v = ref.current;
     if (!v || !url) return;
-    v.volume = 0;
-    v.dataset.volume = "0.00";
+    v.volume = START_VOLUME;
+    v.dataset.volume = START_VOLUME.toFixed(2);
     // joining late (the page was reloaded while it played): carry on from where it should be
     const late = (Date.now() - at) / 1000;
     if (late > 1.5) v.currentTime = late;
     v.muted = false;
     // a hidden tab doesn't start videos until it is shown
     if (document.hidden) report("hidden");
-    v.play().then(() => { if (!exiting.current) ramp(v, 1, FADE_IN_MS); }).catch((e: DOMException) => {
+    v.play().then(() => { if (!exiting.current && !v.muted) ramp(v, 1, FADE_IN_MS); }).catch((e: DOMException) => {
       if (e.name !== "NotAllowedError") return report(failureOf(v.error ?? e).state, failureOf(v.error ?? e).detail);
-      // a normal browser may refuse sound without a click (OBS plays it): play muted rather than not at all
-      v.muted = true;
-      v.dataset.muted = "true";
-      v.play().catch((e2: DOMException) => { const f = failureOf(v.error ?? e2); report(f.state, f.detail); });
+      playMuted(v);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
+
+  // paused by the browser, not by us (a sound policy we didn't see coming): carry on muted
+  const onPause = () => {
+    const v = ref.current;
+    if (!v || exiting.current || v.ended || v.muted) return;
+    playMuted(v);
+  };
 
   // stopped from the dock: fade the sound out, then let the exit finish
   useEffect(() => {
@@ -140,7 +170,7 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
       transition={{ duration: 0.6, ease: EASE }}>
       {url && (
         <video ref={ref} src={url} playsInline className="absolute inset-0 h-full w-full object-cover" data-testid="history-video"
-          onTimeUpdate={onTime} onPlaying={(e) => report(e.currentTarget.muted ? "muted" : "playing")}
+          onTimeUpdate={onTime} onPause={onPause} onPlaying={(e) => report(e.currentTarget.muted ? "muted" : "playing")}
           onError={(e) => { const f = failureOf(e.currentTarget.error); report(f.state, f.detail); }}
           onEnded={() => { report("ended"); onEnded(); }} />
       )}
