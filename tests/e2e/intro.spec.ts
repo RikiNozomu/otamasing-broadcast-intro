@@ -114,6 +114,8 @@ test("runner intro goes through the field in gate order; STARTING GATE lists eve
   const byY = [...ys].sort((a, b) => a[1] - b[1]).map((x) => x[0]);
   expect(byY).toEqual([...byY].sort((a, b) => a - b));
   expect(byY).not.toContain(6);
+  // every row lines up on the same left edge (no stepped rows)
+  await expect.poll(() => rows.evaluateAll((els) => new Set(els.map((e) => Math.round(e.getBoundingClientRect().left))).size)).toBe(1);
   // columns can be hidden, and a page holds fewer rows
   await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
   await dock.locator("#sub-grid").click();

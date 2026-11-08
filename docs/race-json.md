@@ -158,7 +158,7 @@
 | `history.items` | อาร์เรย์ | `[]` | เหตุการณ์ในประวัติรายการ (การ์ดใน modal ประวัติ): `id`, `year` (ตัวใหญ่บนการ์ด), `date` (ขึ้นตอนเล่นวิดีโอ), `title`, `text`, `horses` (ชื่อม้า ธงและสีเสื้อมาจากแท็บม้า), `video` (ชื่อวิดีโอที่เก็บในเบราว์เซอร์ `video/ปีเดือนวันเวลามิลลิวินาที.นามสกุล` หรือ `null`), `duration` (ความยาววิดีโอเป็นวินาที อ่านให้ตอนเลือกไฟล์) |
 | `history.open` / `history.selected` / `history.play` | boolean / id / `{ id, at }` | `false` / `null` / `null` | modal ประวัติเปิดอยู่ไหม, การ์ดที่เลือก, วิดีโอที่กำลังเล่น (เริ่มเมื่อ `at` มิลลิวินาที) |
 | `runner` | `{ index, auto, seconds, since }` | `0`, `false`, `8` | ฉากแนะนำม้า: ม้าตัวที่ `index` ตามลำดับซอง (ไม่รวมม้าถอน) และเปลี่ยนตัวอัตโนมัติทุก `seconds` วินาที (2–600) |
-| `grid` | `{ page, perPage, stagger, show }` | `0`, `18`, `true`, ทุกช่อง `true` | ฉาก STARTING GATE: ม้าทุกตัวเรียงจากบนลงล่างตามซอง หน้าละ `perPage` ตัว (4–18), `stagger` เยื้องแถวสลับซ้ายขวา, `show` เปิด/ปิดช่อง `draw` `number` `silks` `horseWeight` `jockey` `weight` |
+| `grid` | `{ page, perPage, show }` | `0`, `18`, ทุกช่อง `true` | ฉาก STARTING GATE: ม้าทุกตัวเรียงจากบนลงล่างตามซอง แถวตรงกันทุกแถว หน้าละ `perPage` ตัว (4–18), `show` เปิด/ปิดช่อง `draw` `number` `silks` `horseWeight` `jockey` `weight` |
 
 ซองในฉาก Intro = เบอร์ม้าถ้าเปิด "คำนวณซองอัตโนมัติ" (JRA) ไม่งั้นใช้ `draw`
 

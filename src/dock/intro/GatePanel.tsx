@@ -1,4 +1,4 @@
-/** The การแข่งขัน tab's "Starting Gate" part: rows a page, the F1 stagger, which columns show, the page on screen. */
+/** The การแข่งขัน tab's "Starting Gate" part: rows a page, which columns show, the page on screen. */
 import { introOf, type Race } from "../../lib/model";
 import { update, useData } from "../../lib/store";
 import { Button } from "../../components/Button";
@@ -24,7 +24,6 @@ export function GatePanel({ race }: { race: Race }) {
         <Field id="g-per" label="แถวต่อหน้า">
           <input id="g-per" className={inputClass} type="number" min={4} max={18} value={g.perPage} onChange={(e) => setG({ perPage: Math.min(18, Math.max(4, Math.round(+e.target.value || 18))), page: 0 })} />
         </Field>
-        <Switch on={g.stagger} label="เยื้องแถวสลับซ้ายขวาแบบ F1" testId="gate-stagger" onToggle={() => setG({ stagger: !g.stagger })} />
         <GatePages race={race} testId="gate-pages" />
       </Section>
       <Section title="ช่องที่แสดง">

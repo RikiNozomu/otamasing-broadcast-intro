@@ -109,8 +109,6 @@ export const RunnerViewSchema = z.object({
 export const GridViewSchema = z.object({
   page: z.number().int().min(0).default(0),
   perPage: z.number().int().min(4).max(18).default(18),
-  /** Every other row stepped to the right, like an F1 starting grid. */
-  stagger: z.boolean().default(true),
   show: z.object({
     draw: z.boolean().default(true),
     number: z.boolean().default(true),

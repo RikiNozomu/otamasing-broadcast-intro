@@ -1,6 +1,6 @@
 /**
- * Starting gate (1920x1080): every runner top to bottom in gate order, one a row, like an F1 starting grid
- * (every other row stepped to the right). Gate and number boxes, silks, horse, horse weight, jockey, weight;
+ * Starting gate (1920x1080): every runner top to bottom in gate order, one a row, all rows lined up straight.
+ * Gate and number boxes, silks, horse, horse weight, jockey, weight;
  * each can be hidden. Rows come in one after another from the top; more than `perPage` runners make pages.
  */
 import { AnimatePresence, motion } from "motion/react";
@@ -16,7 +16,7 @@ import { PageCount, RacePhoto } from "../RaceBackdrop";
 import { useLeaving } from "../leaving";
 import { EASE, IntroHeader } from "./IntroHeader";
 
-const TOP = 262, BOTTOM = 1040, LEFT = 60, STEP_X = 96;
+const TOP = 262, BOTTOM = 1040, LEFT = 60;
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 
 export function GridScene({ race }: { race: Race }) {
@@ -28,7 +28,7 @@ export function GridScene({ race }: { race: Race }) {
   const rowH = Math.round(pitch * 0.86);
   const font = Math.round(rowH * 0.66);
   const box = Math.round(rowH * 1.45);
-  const width = 1920 - 2 * LEFT - (g.stagger ? STEP_X : 0);
+  const width = 1920 - 2 * LEFT;
   const anyHorseWeight = show.horseWeight && race.runners.some((h) => h.horseWeight != null);
   const anyWeight = show.weight && race.runners.some((h) => h.weight != null);
   const cols = [show.draw ? `${box}px` : null, show.number ? `${box}px` : null, show.silks ? `${Math.round(rowH * 1.5)}px` : null, "minmax(0,1.25fr)",
@@ -43,7 +43,7 @@ export function GridScene({ race }: { race: Race }) {
     const band = "flex h-full min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap px-4 font-display bg-[linear-gradient(90deg,var(--color-band)_80%,rgb(44_48_96/.35))]";
     return (
       <motion.div key={h.number} data-no={h.number} data-stall={stallOf(race, h)}
-        className="relative grid items-center gap-2" style={{ height: rowH, width, marginLeft: g.stagger && i % 2 ? STEP_X : 0, gridTemplateColumns: cols, fontSize: font }}
+        className="relative grid items-center gap-2" style={{ height: rowH, width, gridTemplateColumns: cols, fontSize: font }}
         initial={{ opacity: 0, x: -140, clipPath: "inset(0 100% 0 0)" }}
         animate={leaving
           ? { opacity: 0, x: 120, transition: { duration: 0.25, ease: EASE, delay: i * 0.015 } }
