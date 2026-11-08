@@ -36,6 +36,20 @@ describe("venues", () => {
     expect(facts).toMatchObject({ corners: 4, height: 4.3, home: 403.7 });
     expect(facts.back).toBeGreaterThan(300);
   });
+  it("Kyoto's 1600 m and 1800 m on the outer course start up the chute behind the 2nd corner", () => {
+    const join = outer.chute!.join;
+    const st = startOf(outer, 1600);
+    expect(st.chute).toBeCloseTo(join - (outer.length - 1600), 5);
+    const pieces = racePieces(outer, 1600);
+    expect(pieces[0][0]).toBeCloseTo(join, 5);
+    expect(st.chute + pieces.reduce((t, [a, b]) => t + b - a, 0)).toBeCloseTo(1600, 5);
+    // the chute runs straight into the back straight: only the 3rd and 4th corners
+    expect(cornersRun(outer, 1600)).toBe(2);
+    expect(startOf(outer, 1800).chute).toBeGreaterThan(400);
+    // 2200 m starts on the home straight; the dirt course has no chute
+    expect(startOf(outer, 2200).chute).toBe(0);
+    expect(startOf(kyoto.tracks.find((t) => t.id === "dirt")!, 1800).chute).toBe(0);
+  });
   it("the hill stays between 0 and the course's height difference", () => {
     for (let s = 0; s < outer.length; s += 37) {
       const h = heightAt(outer, s);
@@ -128,18 +142,24 @@ describe("files with the intro", () => {
     expect(res.data.races[0].intro.grid.perPage).toBe(18);
     expect(res.data.jockeys).toEqual([]);
   });
-  it("the QE II Cup file has the field, pedigrees, records and history", () => {
-    const res = parseFile(read("docs/qe2-cup-2026.json"));
+  it("the Mile Championship file has the field, pedigrees, records and history", () => {
+    const res = parseFile(read("docs/mile-cs-2026.json"));
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     const race = res.data.races[0];
-    expect(race).toMatchObject({ name: "Queen Elizabeth II Cup", course: "Kyoto", distanceM: 2200, postTime: "13:40", grade: "G1" });
-    expect(courseOf(race as never)?.track.id).toBe("turf-outer");
-    expect(race.intro.records.course).toMatchObject({ time: "2:09.7", horse: "Neptunite" });
-    expect(race.intro.records.race).toMatchObject({ time: "2:11.0", horse: "Regaleira" });
+    expect(race).toMatchObject({ name: "Mile Championship", course: "Kyoto", distanceM: 1600, postTime: "13:40", grade: "G1" });
+    const course = courseOf(race as never);
+    expect(course?.track.id).toBe("turf-outer");
+    // from the chute behind the 2nd corner, round the 3rd and 4th
+    expect(startOf(course!.track, race.distanceM!).chute).toBeGreaterThan(200);
+    expect(courseFacts(course!.track, race.distanceM).corners).toBe(2);
+    expect(race.intro.records.course).toMatchObject({ time: "1:31.3", horse: "Sungrazer" });
+    expect(race.intro.records.race).toMatchObject({ time: "1:31.3", horse: "Jantar Mantar" });
     expect(race.intro.history.items.length).toBeGreaterThan(3);
     expect(res.data.horses.every((h) => h.sire && h.dam && h.bms)).toBe(true);
     expect(race.runners.every((r) => res.data.horses.some((h) => h.name === r.name))).toBe(true);
+    // trained in France
+    expect(race.runners.find((r) => r.name === "Erdenali")).toMatchObject({ horseCountry: "FR", jockeyCountry: "FR" });
   });
   it("jockeys merge by name and go out with the file", () => {
     const cur: AppData = { ...sampleData(), jockeys: [{ id: "a", name: "C. Lemaire", country: "FR", photo: "image/20261107120000000.png" }] };

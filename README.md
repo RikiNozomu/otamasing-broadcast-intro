@@ -20,7 +20,7 @@
 - แท็บ **ม้า**: พ่อ แม่ BMS และสีเสื้อของม้า (ฉากแนะนำม้าใช้ชื่อม้าจับคู่) แท็บ **จ็อกกี้**: รูปจ็อกกี้ (PNG ตัดพื้นหลัง) ปุ่ม "เพิ่มทั้งหมด" ดึงชื่อจ็อกกี้จากตารางม้าให้
 - เวลาออกตัวในไฟล์เป็น **เวลาไทย** (JRA = เวลาญี่ปุ่น − 2 ชม.)
 - ข้อมูลเก็บใน localStorage (key `otamasing-broadcast-intro/v1`) รูปและวิดีโอเก็บใน IndexedDB ของเบราว์เซอร์ ย้ายเครื่องด้วย .zip จากปุ่ม "บันทึก .zip พร้อมรูป" (ติ๊กใส่วิดีโอได้)
-- รูปแบบไฟล์ JSON: [docs/race-json.md](docs/race-json.md), ตัวอย่าง [docs/example-race.json](docs/example-race.json), Queen Elizabeth II Cup 2026 [docs/qe2-cup-2026.json](docs/qe2-cup-2026.json), JSON Schema [schema/race.schema.json](schema/race.schema.json)
+- รูปแบบไฟล์ JSON: [docs/race-json.md](docs/race-json.md), ตัวอย่าง [docs/example-race.json](docs/example-race.json), Mile Championship 2026 [docs/mile-cs-2026.json](docs/mile-cs-2026.json), JSON Schema [schema/race.schema.json](schema/race.schema.json)
 - 3D ต้องเปิด hardware acceleration ใน OBS (Settings → Advanced → Sources → Enable Browser Source Hardware Acceleration)
 
 ## พัฒนา

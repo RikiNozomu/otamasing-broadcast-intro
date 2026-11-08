@@ -8,6 +8,12 @@ import type { Focus } from "./introSchema";
 
 export type SectionId = "home" | "back" | "c1" | "c2" | "c3" | "c4";
 export interface Section { id: SectionId; kind: "straight" | "corner"; from: number; to: number }
+/**
+ * A chute: a straight spur off the loop where some races start (Kyoto's pocket behind the 2nd corner). A race whose
+ * start would fall up to `length` metres before `join` on the loop starts up the chute instead and runs into the loop
+ * at `join`. `line` is its centre line, from the far end to the loop (metres, like the running line).
+ */
+export interface Chute { join: number; length: number; line: [number, number][] }
 export interface Track {
   id: string;
   label: string;
@@ -21,6 +27,7 @@ export interface Track {
   sections: Section[];
   /** Height (m) every 10 m from the post: [s, h]. */
   elevation: [number, number][];
+  chute?: Chute;
 }
 export interface Venue {
   id: string;
@@ -60,16 +67,31 @@ export function courseOf(race: Pick<Race, "course" | "surface" | "intro">, venue
   return track ? { venue, track } : null;
 }
 
-/** Where a race of `distance` metres starts: `s` on the loop, and how many whole laps come after it. */
-export function startOf(track: Pick<Track, "length">, distance: number) {
-  return { s: wrap(-distance, track.length), laps: Math.floor(distance / track.length) };
+/**
+ * Metres a race of `distance` runs on the chute before it reaches the loop (0 when it starts on the loop). The chute
+ * as drawn can come out a few metres short of the official distances, so a start just past its far end still counts.
+ */
+export function chuteRun(track: Pick<Track, "length" | "chute">, distance: number): number {
+  const c = track.chute;
+  if (!c || distance >= track.length) return 0;
+  const back = c.join - wrap(-distance, track.length);
+  return back > 0 && back <= c.length * 1.05 ? back : 0;
 }
 
 /**
- * The race's path as pieces of the loop, in running order: from the start to the post, lapping when the
- * race is longer than one lap. Each piece is [from, to] with from < to, inside 0..length.
+ * Where a race of `distance` metres starts: `s` on the loop (as if the loop ran on round), how many whole laps come
+ * after it, and `chute`: metres up the chute from where it joins the loop when the race starts there (else 0).
  */
-export function racePieces(track: Pick<Track, "length">, distance: number): [number, number][] {
+export function startOf(track: Pick<Track, "length" | "chute">, distance: number) {
+  return { s: wrap(-distance, track.length), laps: Math.floor(distance / track.length), chute: chuteRun(track, distance) };
+}
+
+/**
+ * The race's path as pieces of the loop, in running order: from the start (or where the chute joins the loop) to
+ * the post, lapping when the race is longer than one lap. Each piece is [from, to] with from < to, inside 0..length.
+ */
+export function racePieces(track: Pick<Track, "length" | "chute">, distance: number): [number, number][] {
+  distance -= chuteRun(track, distance);
   const L = track.length;
   let left = distance, s = wrap(-distance, L);
   const out: [number, number][] = [];
@@ -94,7 +116,7 @@ export function sectionPieces(track: Pick<Track, "length">, sec: Pick<Section, "
 const overlap = (a: [number, number], b: [number, number]) => Math.max(0, Math.min(a[1], b[1]) - Math.max(a[0], b[0]));
 
 /** Corners the race goes through (a corner counts each time it is run, if at least half of it is run). */
-export function cornersRun(track: Pick<Track, "length" | "sections">, distance: number): number {
+export function cornersRun(track: Pick<Track, "length" | "sections" | "chute">, distance: number): number {
   const path = racePieces(track, distance);
   let n = 0;
   for (const sec of track.sections) {

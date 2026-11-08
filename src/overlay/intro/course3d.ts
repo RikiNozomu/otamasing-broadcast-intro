@@ -18,6 +18,12 @@ import { CSS2DObject, CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRe
 import type { Focus } from "../../lib/introSchema";
 import { focused, heightAt, racePieces, sectionPieces, SECTION_LABEL, startOf, wrap, type Track, type Venue } from "../../lib/venues";
 
+/**
+ * A stretch of the race's path: [from, to] in metres on the loop (from the post), or with "chute", on the chute in
+ * metres from where it joins the loop, negative (-100 = 100 m up the chute).
+ */
+type Span = [number, number, "chute"?];
+
 export const W = 1920, H = 1080;
 export interface World { coast: [number, number][][]; border: [number, number][][] }
 export interface CourseOptions {
@@ -158,7 +164,7 @@ export class CourseView3D {
   private show = { path: 1, startFinish: 1, chevrons: 1, wall: 0 };
   private opts: CourseOptions;
   private courseAt: number;
-  private pieces: [number, number][];
+  private pieces: Span[];
   private pathLen: number;
 
   constructor(host: HTMLElement, private venue: Venue, private track: Track, private distance: number, opts: CourseOptions, private world: World | null) {
@@ -182,7 +188,8 @@ export class CourseView3D {
     this.cam.setViewOffset(W, H, 0, 36, W, H);
     this.courseAt = world ? COURSE_AT : 0;
     const L = track.length;
-    this.pieces = racePieces(track, distance || L);
+    const up = startOf(track, distance || L).chute;
+    this.pieces = [...(up ? [[-up, 0, "chute"] as Span] : []), ...racePieces(track, distance || L)];
     this.pathLen = this.pieces.reduce((t, [a, b]) => t + b - a, 0);
     this.curve = new THREE.CatmullRomCurve3(track.line.map(([x, y]) => new THREE.Vector3(x, 0, -y)), true, "centripetal");
 
@@ -206,6 +213,18 @@ export class CourseView3D {
     return { p: this.curve.getPointAt(u), t: this.curve.getTangentAt(u) };
   }
   private h(s: number) { return heightAt(this.track, s); }
+  /** Point and direction on the chute, `s` metres from where it joins the loop (negative: up the chute). */
+  private chuteAt(s: number) {
+    const c = this.track.chute!, [far, near] = c.line;
+    const k = -s / c.length;
+    const p = new THREE.Vector3(near[0] + (far[0] - near[0]) * k, 0, -(near[1] + (far[1] - near[1]) * k));
+    const t = new THREE.Vector3(near[0] - far[0], 0, -(near[1] - far[1])).normalize();
+    return { p, t };
+  }
+  /** Point, direction and height on a span of the path. */
+  private on(s: number, chute?: "chute") {
+    return chute ? { ...this.chuteAt(s), y: this.h(this.track.chute!.join) } : { ...this.at(s), y: this.h(s) };
+  }
 
   private buildGlobe(world: World) {
     const { lat, lon } = this.venue;
@@ -231,16 +250,16 @@ export class CourseView3D {
     this.globeCam.position.set(0, 0, 4.4);
   }
 
-  private ribbon(pieces: [number, number][], width: number, color: THREE.Color, opacity: number, order: number, lift = 0): Ribbon {
+  private ribbon(pieces: Span[], width: number, color: THREE.Color, opacity: number, order: number, lift = 0): Ribbon {
     const pos: number[] = [], idx: number[] = [];
     let v = 0;
-    for (const [a, b] of pieces) {
+    for (const [a, b, chute] of pieces) {
       const n = Math.max(2, Math.ceil((b - a) / 3));
       for (let i = 0; i <= n; i++) {
         const s = a + ((b - a) * i) / n;
-        const { p, t } = this.at(s);
+        const { p, t, y: ground } = this.on(s, chute);
         const nx = -t.z, nz = t.x; // across the track
-        const y = this.h(s) + lift;
+        const y = ground + lift;
         pos.push(p.x + nx * width / 2, y, p.z + nz * width / 2, p.x - nx * width / 2, y, p.z - nz * width / 2);
         if (i > 0) idx.push(v - 2, v - 1, v, v - 1, v + 1, v);
         v += 2;
@@ -356,19 +375,54 @@ export class CourseView3D {
     this.finishLabel = label(`<b>FINISH</b>`, "course-label course-label--finish");
     this.startLabel.el.style.opacity = this.finishLabel.el.style.opacity = "0";
     this.scene.add(this.startLabel.o, this.finishLabel.o);
-    this.startPole.userData.s = st.s;
-    this.finishPole.userData.s = 0;
+    this.startPole.userData.at = st.chute ? ([-st.chute, "chute"] as const) : ([st.s] as const);
+    this.finishPole.userData.at = [0] as const;
 
     this.scene.add(this.ground);
     // the camera: centre of the track, orbit radius from its size, starting on the home straight's side
+    // (a start up the chute counts as part of the course, so the camera centres on the whole race)
+    const sp = st.chute ? this.chuteAt(-st.chute).p : null;
     const box = new THREE.Box3().setFromPoints(this.track.line.map(([x, y]) => new THREE.Vector3(x, 0, -y)));
+    if (sp) box.expandByPoint(sp);
     box.getCenter(this.center);
     // far enough that the whole loop fits across the screen whichever way it faces (the bounding circle's radius)
-    const R = Math.max(...this.track.line.map(([x, y]) => Math.hypot(x - this.center.x, -y - this.center.z)));
-    this.radius = R * 2.45;
+    const R = Math.max(...this.track.line.map(([x, y]) => Math.hypot(x - this.center.x, -y - this.center.z)),
+      sp ? Math.hypot(sp.x - this.center.x, sp.z - this.center.z) : 0);
+    // a start up a chute makes the course long and thin, and at a low angle its near end comes down over the boxes
+    // along the bottom: stand far enough off that it stays between them and the title whichever way the orbit faces
+    const keep = this.track.line.filter((_, i) => i % 2 === 0).map(([x, y]) => new THREE.Vector3(x, 0, -y));
+    if (sp) keep.push(sp, sp.clone().setY(100));
+    this.radius = Math.max(R * 2.45, sp ? this.fitDistance(keep, THREE.MathUtils.degToRad(20)) : 0);
     const home = this.track.sections.find((x) => x.id === "home");
     const hm = this.at(home ? (home.from + home.to) / 2 : 0).p.clone().sub(this.center);
     this.theta0 = Math.atan2(hm.x, hm.z);
+  }
+
+  /** The camera distance at `phi` above the ground that keeps `points` inside the band between the title and the
+   * boxes along the bottom, at the worst angle round the orbit. */
+  private fitDistance(points: THREE.Vector3[], phi: number) {
+    const cam = this.cam.clone();
+    const fits = (theta: number, dist: number) => {
+      cam.position.set(this.center.x + Math.sin(theta) * Math.cos(phi) * dist, Math.sin(phi) * dist, this.center.z + Math.cos(theta) * Math.cos(phi) * dist);
+      cam.up.set(0, 1, 0);
+      cam.lookAt(this.center);
+      cam.updateMatrixWorld();
+      return points.every((p) => {
+        const v = p.clone().project(cam);
+        return Math.abs(v.x) < 0.93 && v.y > -0.5 && v.y < 0.58;
+      });
+    };
+    let need = 0;
+    for (let k = 0; k < 36; k++) {
+      const theta = (k / 36) * Math.PI * 2;
+      let lo = 100, hi = 30000;
+      for (let i = 0; i < 20; i++) {
+        const mid = (lo + hi) / 2;
+        if (fits(theta, mid)) hi = mid; else lo = mid;
+      }
+      need = Math.max(need, hi);
+    }
+    return need;
   }
 
   private frame(now: number) {
@@ -449,20 +503,20 @@ export class CourseView3D {
     // chevrons run along the path (or the whole loop when the path is off), from the start to the post
     if (this.chevrons && this.chevronMat) {
       const spacing = 34, speed = 46;
-      const along = o.path ? this.pieces : [[0, L] as [number, number]];
+      const along: Span[] = o.path ? this.pieces : [[0, L]];
       const total = along.reduce((s, [a, b]) => s + b - a, 0);
       const shift = (t * speed) % spacing;
       const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), pos = new THREE.Vector3();
       const up = new THREE.Vector3(0, 1, 0);
       for (let k = 0; k < this.chevrons.count; k++) {
         const d = k * spacing + shift;
-        let s = 0, left = d;
+        let s = 0, left = d, chute: Span[2];
         const ok = d < total;
-        for (const [a, b] of along) { if (left <= b - a) { s = a + left; break; } left -= b - a; }
+        for (const [a, b, c] of along) { if (left <= b - a) { s = a + left; chute = c; break; } left -= b - a; }
         const fadeEnds = Math.min(1, d / 60, (total - d) / 60);
         const k2 = ok ? Math.max(0, fadeEnds) : 0;
-        const { p, t: tan } = this.at(s);
-        pos.set(p.x, this.h(s) + 0.05, p.z);
+        const { p, t: tan, y } = this.on(s, chute);
+        pos.set(p.x, y + 0.05, p.z);
         q.setFromAxisAngle(up, Math.atan2(-tan.z, tan.x));
         sc.setScalar(k2);
         m.compose(pos, q, sc);
@@ -477,7 +531,7 @@ export class CourseView3D {
     for (const m of this.markerMats) (m as THREE.MeshBasicMaterial).opacity = sf;
     for (const [pole, lab] of [[this.startPole, this.startLabel], [this.finishPole, this.finishLabel]] as const) {
       if (!pole || !lab) continue;
-      const s = pole.userData.s as number, { p } = this.at(s), y = this.h(s) * this.elev;
+      const [s, chute] = pole.userData.at as [number, "chute"?], { p, y: ground } = this.on(s, chute), y = ground * this.elev;
       pole.position.set(p.x, y + 35, p.z);
       lab.o.position.set(p.x, y + 82, p.z);
       lab.el.style.opacity = String(sf);

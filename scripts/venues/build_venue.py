@@ -10,7 +10,10 @@ and the course facts published by the racing authority (lap length, home straigh
 What it writes, all in metres on a flat plane around the venue's centre (x = east, y = north):
 - `outline`: thin lines drawn around the course for context (every track edge in the OSM area);
 - per track: the running line (a closed loop a few metres outside the inside rail, in running order and
-  starting at the winning post), its sections (straights and corners, from the curvature) and a height profile.
+  starting at the winning post), its sections (straights and corners, from the curvature) and a height profile;
+- per track with a chute (a straight spur off the loop where some races start, like Kyoto's pocket behind the
+  2nd corner): `chute` = where it runs into the loop (`join`, official metres from the post), its length and its
+  centre line from the far end to that point.
 
 Track shapes © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright).
 Heights are a smooth approximation of the authority's course diagram: only the total height difference
@@ -34,6 +37,10 @@ CACHE = HERE / "cache"
 # `rails`: OSM ways whose polygons together are the infield of this course (their outside edge is the inside rail).
 # `hill`: where the height changes, as (section, fraction along it) pairs: up from `rise` to the top at `peak`,
 # down to `fall`. Kyoto's hill ("淀の坂") rises along the back straight into the 3rd corner and drops through the 4th.
+# `chute`: the two OSM nodes at the chute's far end and the section it runs into. JRA: "2コーナーの奥にはバックストレッチに
+# 連なる長い引き込み線が設けられており、外回りの芝1600メートルと芝1800メートル、内回りの芝1600メートルは、向正面左手の
+# 奥深い地点からスタートを切ることになる".
+KYOTO_CHUTE = {"tip": ["5121185493", "5121185494"], "join": "back"}
 VENUES = {
     "kyoto": {
         "name": "Kyoto Racecourse",
@@ -47,10 +54,10 @@ VENUES = {
         "tracks": [
             {"id": "turf-outer", "label": "Turf (Outer)", "surface": "Turf", "rails": ["526656543", "526656542"], "offset": 4,
              "length": 1894.3, "homestretch": 403.7, "height": 4.3,
-             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.55], "fall": ["c4", 0.95]}},
+             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.55], "fall": ["c4", 0.95]}, "chute": KYOTO_CHUTE},
             {"id": "turf-inner", "label": "Turf (Inner)", "surface": "Turf", "rails": ["526656543"], "offset": 4,
              "length": 1782.8, "homestretch": 328.4, "height": 3.1,
-             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.5], "fall": ["c4", 0.95]}},
+             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.5], "fall": ["c4", 0.95]}, "chute": KYOTO_CHUTE},
             {"id": "dirt", "label": "Dirt", "surface": "Dirt", "rails": ["526656545"], "offset": 3,
              "length": 1607.6, "homestretch": 329.1, "height": 3.0,
              "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.5], "fall": ["c4", 0.95]}},
@@ -77,7 +84,7 @@ def load(p: Path):
     t = ET.parse(p).getroot()
     nodes = {n.get("id"): (float(n.get("lat")), float(n.get("lon"))) for n in t.findall("node")}
     ways = {w.get("id"): [nodes[n.get("ref")] for n in w.findall("nd") if n.get("ref") in nodes] for w in t.findall("way")}
-    return ways
+    return ways, nodes
 
 
 def projector(lat0, lon0):
@@ -133,7 +140,7 @@ def runs(flags):
     return out
 
 
-def build_track(cfg, ways, proj, plot=None):
+def build_track(cfg, ways, nodes, proj, plot=None):
     # an oval is convex, so the hull of the rail polygons is the infield; it also joins Kyoto's inner rail to the
     # island inside the outer course (the outer course's inside rail is that island's outer edge)
     infield = unary_union([Polygon([proj(p) for p in ways[w]]) for w in cfg["rails"]]).convex_hull
@@ -212,6 +219,17 @@ def build_track(cfg, ways, proj, plot=None):
         "sections": sections,
         "elevation": prof,
     }
+    if "chute" in cfg:
+        # a straight centre line from the middle of the far end to the loop at the start of the section it runs into
+        tip = [proj(nodes[i]) for i in cfg["chute"]["tip"]]
+        far = ((tip[0][0] + tip[1][0]) / 2, (tip[0][1] + tip[1][1]) / 2)
+        join = sec[cfg["chute"]["join"]]["from"]
+        near = pts[round(join / scale / STEP) % n]
+        out["chute"] = {"join": join, "length": round(math.dist(far, near) * scale, 1),
+                        "line": [[round(far[0], 1), round(far[1], 1)], [round(near[0], 1), round(near[1], 1)]]}
+        print(f"  {cfg['id']}: chute {out['chute']['length']:.0f} m into the loop at {join:.0f} m")
+        if plot is not None:
+            plot.plot([far[0], near[0]], [far[1], near[1]], lw=1, ls="--")
     back = sec["back"]["to"] - sec["back"]["from"]
     print(f"  {cfg['id']}: drawn {total:.0f} m (scale {scale:.3f}), {len(out['line'])} pts, back straight {back:.0f} m,",
           ", ".join(f"{x['id']} {x['from']:.0f}-{x['to']:.0f}" for x in sections))
@@ -224,7 +242,7 @@ def build_track(cfg, ways, proj, plot=None):
 def main():
     vid = sys.argv[1]
     cfg = VENUES[vid]
-    ways = load(fetch(vid, cfg["bbox"]))
+    ways, nodes = load(fetch(vid, cfg["bbox"]))
     allpts = [p for w in cfg["outline"] for p in ways[w]]
     lat0 = sum(p[0] for p in allpts) / len(allpts)
     lon0 = sum(p[1] for p in allpts) / len(allpts)
@@ -238,7 +256,7 @@ def main():
     print(vid)
     stand = [proj(p) for p in ways[cfg["stands"]]]
     stands = (sum(p[0] for p in stand) / len(stand), sum(p[1] for p in stand) / len(stand))
-    tracks = [build_track({**t, "direction": cfg["direction"], "stands": stands}, ways, proj, ax) for t in cfg["tracks"]]
+    tracks = [build_track({**t, "direction": cfg["direction"], "stands": stands}, ways, nodes, proj, ax) for t in cfg["tracks"]]
     outline = []
     for w in cfg["outline"]:
         ring = LineString([proj(p) for p in ways[w]]).simplify(0.4)
