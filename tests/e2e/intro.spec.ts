@@ -41,6 +41,9 @@ test("course scene: the globe turns in, then the course; options switch while it
   await expect(view).toHaveAttribute("data-focus", "corners");
   await dock.getByTestId("show-panel-records").click();
   await expect(scene.getByTestId("panel-records")).toHaveCount(0);
+  // switched back on, the box comes straight in: the wait for the camera is only at the start of the scene
+  await dock.getByTestId("show-panel-records").click();
+  await expect(scene.getByTestId("panel-records")).toHaveCSS("opacity", "1", { timeout: 4000 });
   // straight to the course without the globe
   await dock.getByTestId("course-globe").click();
   await expect(live(overlay).getByTestId("course-3d")).toHaveAttribute("data-globe", "off");
@@ -78,10 +81,10 @@ test("history: cards in a modal over the course, a picked card's video plays wit
   await expect(player).toHaveCount(0, { timeout: 8000 });
   await expect(modal.locator("[data-testid=history-card][data-item=hist-2]")).toBeVisible();
   await expect(dock.getByTestId("history-playing")).toHaveCount(0, { timeout: 8000 });
-  // closing the modal brings the boxes back
+  // closing the modal brings the boxes straight back (not after the scene's opening wait again)
   await dock.getByTestId("history-open").click();
   await expect(modal).toHaveCount(0);
-  await expect(live(overlay).getByTestId("panel-venue")).toBeVisible();
+  await expect(live(overlay).getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 2500 });
 });
 
 test("runner intro goes through the field in gate order; STARTING GATE lists every runner top to bottom", async ({ context }) => {
@@ -97,11 +100,16 @@ test("runner intro goes through the field in gate order; STARTING GATE lists eve
   // the change sits right after the weight; the label says what the number is
   await expect(runner.getByTestId("horse-weight")).toContainText(/^440\s*\(-8\)\s*HORSE WEIGHT \(KG\)$/);
   await expect(scene.getByTestId("gate-band")).toHaveAttribute("data-stall", "1");
+  // the rail post stands beside stall 1 ...
+  const postX = async () => Math.round((await scene.getByTestId("gate-post").boundingBox())?.x ?? NaN);
+  await expect.poll(postX).toBe(226);
   const quick = dock.getByTestId("quick-runner");
   for (const no of ["2", "3", "4", "5", "7"]) { // 6 is scratched
     await quick.getByRole("button", { name: "ม้าตัวถัดไป" }).click();
     await expect(scene.getByTestId("gate-band")).toHaveAttribute("data-stall", no);
   }
+  // ... and slides away with the whole gate: stall 7 now sits where stall 1 was
+  await expect.poll(postX, { timeout: 5000 }).toBe(226 - 6 * 118);
   await expect(scene.getByTestId("scene-tag")).toContainText("6 / 17");
 
   await dock.getByRole("button", { name: "ตั้งGate 11R Sample Cup เป็น Active" }).click();

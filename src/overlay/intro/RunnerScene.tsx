@@ -1,7 +1,7 @@
 /**
  * Runner intro (1920x1080), after Nopphorn's sketch: one runner at a time in gate order.
- * Left: the starting gate (a post and a row of stalls; this runner's stall glows with its number and the row
- * slides to it). Right: the jockey's cut-out photo. Bottom: the jockey's name and weight carried on a bar,
+ * Left: the starting gate (the rail post beside stall 1 and the row of stalls; this runner's stall glows with its
+ * number and the whole gate, post included, slides to it). Right: the jockey's cut-out photo. Bottom: the jockey's name and weight carried on a bar,
  * then the number box, the silks and the horse's name; bottom right SIRE × DAM (by BMS) and the horse's weight with its change, over "HORSE WEIGHT (KG)".
  */
 import { AnimatePresence, motion } from "motion/react";
@@ -26,39 +26,42 @@ const BAR_TOP = 818, LINE_Y = 916;
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 
-/** The starting gate: the post, and the stalls sliding so that `stall` sits against the post. */
+/**
+ * The starting gate: the rail post beside stall 1, then the row of stalls. The whole gate, post included, slides
+ * so that this runner's stall sits where stall 1 sits by the post: going up the field the post slides away left
+ * with the stalls before this one, like a camera panning along the gate.
+ */
 function Gate({ stall, count }: { stall: number; count: number }) {
   const leaving = useLeaving();
   return (
-    <>
+    <motion.div data-testid="gate-band" data-stall={stall} className="absolute inset-y-0 left-0 w-[1920px]" initial={false}
+      animate={{ x: -(stall - 1) * STALL_W }} transition={{ type: "spring", stiffness: 120, damping: 22 }}>
       {/* the post: two uprights and a crossbar */}
-      <motion.div className="absolute top-0 left-[226px] h-[800px] w-[110px]" initial={{ y: -820 }} animate={{ y: leaving ? -820 : 0 }} transition={{ duration: 0.6, ease: EASE, delay: leaving ? 0.1 : 0.05 }}>
+      <motion.div data-testid="gate-post" className="absolute top-0 h-[800px] w-[110px]" style={{ left: POST_X - 110 }}
+        initial={{ y: -820 }} animate={{ y: leaving ? -820 : 0 }} transition={{ duration: 0.6, ease: EASE, delay: leaving ? 0.1 : 0.05 }}>
         <div className="absolute inset-y-0 left-0 w-[26px] bg-[linear-gradient(90deg,#d9dcef,#fff_45%,#aeb3d6)] shadow-[6px_0_18px_rgb(0_0_0/.35)]" />
         <div className="absolute inset-y-0 right-0 w-[30px] bg-[linear-gradient(90deg,#c9cde8,#fff_45%,#9ea4cc)] shadow-[6px_0_18px_rgb(0_0_0/.35)]" />
         <div className="absolute top-[520px] right-0 left-0 h-[16px] bg-white/90" />
         <div className="absolute top-[120px] right-0 left-0 h-[10px] bg-white/60" />
       </motion.div>
-      {/* the stalls, clipped at the post */}
-      <motion.div className="absolute overflow-hidden" style={{ left: POST_X, top: BAND_TOP, height: BAND_H, width: 1920 - POST_X }}
+      {/* the stalls, from the post */}
+      <motion.div className="absolute flex" style={{ left: POST_X, top: BAND_TOP, height: BAND_H }}
         initial={{ clipPath: "inset(0 100% 0 0)" }} animate={{ clipPath: leaving ? "inset(0 100% 0 0)" : "inset(0 0% 0 0)" }} transition={{ duration: 0.7, ease: EASE, delay: leaving ? 0 : 0.25 }}>
-        <motion.div data-testid="gate-band" data-stall={stall} className="absolute inset-y-0 left-0 flex" initial={false}
-          animate={{ x: -(stall - 1) * STALL_W }} transition={{ type: "spring", stiffness: 120, damping: 22 }}>
-          {Array.from({ length: Math.max(count, stall) + 8 }, (_, i) => {
-            const no = i + 1, on = no === stall, real = no <= count;
-            return (
-              <div key={no} className="relative h-full flex-none border-r-[6px] border-yellow/70" style={{ width: STALL_W }}>
-                <div className={cx("absolute inset-x-0 top-0 h-[14px]", real ? "bg-white/85" : "bg-white/25")} />
-                <div className={cx("absolute inset-x-0 bottom-0 h-[10px]", real ? "bg-white/70" : "bg-white/20")} />
-                {real && (
-                  <span className={cx("absolute inset-x-[10px] top-[22px] bottom-[18px] grid place-items-center font-display text-[64px] font-bold transition-[background-color,color,box-shadow] duration-500",
-                    on ? "bg-yellow text-navy shadow-[0_0_40px_10px_rgb(255_237_13/.55)]" : "bg-navy/55 text-white/60")}>{no}</span>
-                )}
-              </div>
-            );
-          })}
-        </motion.div>
+        {Array.from({ length: Math.max(count, stall) + 14 }, (_, i) => {
+          const no = i + 1, on = no === stall, real = no <= count;
+          return (
+            <div key={no} className="relative h-full flex-none border-r-[6px] border-yellow/70" style={{ width: STALL_W }}>
+              <div className={cx("absolute inset-x-0 top-0 h-[14px]", real ? "bg-white/85" : "bg-white/25")} />
+              <div className={cx("absolute inset-x-0 bottom-0 h-[10px]", real ? "bg-white/70" : "bg-white/20")} />
+              {real && (
+                <span className={cx("absolute inset-x-[10px] top-[22px] bottom-[18px] grid place-items-center font-display text-[64px] font-bold transition-[background-color,color,box-shadow] duration-500",
+                  on ? "bg-yellow text-navy shadow-[0_0_40px_10px_rgb(255_237_13/.55)]" : "bg-navy/55 text-white/60")}>{no}</span>
+              )}
+            </div>
+          );
+        })}
       </motion.div>
-    </>
+    </motion.div>
   );
 }
 

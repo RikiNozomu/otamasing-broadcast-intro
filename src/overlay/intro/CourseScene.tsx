@@ -151,8 +151,11 @@ export function CourseScene({ race }: { race: Race }) {
   const found = courseOf(race);
   const h = race.intro.history;
   const modal = h.open || !!h.play;
-  // the boxes come in once the camera has reached the course
-  const delay = race.intro.course.globe ? 7.4 : 3;
+  // the boxes come in once the camera has reached the course: that wait counts from when the scene started (or
+  // the dock replayed it), so a box switched back on, or the row coming back after the history modal, shows at once
+  const started = useRef({ since: race.intro.course.since, at: performance.now() });
+  if (started.current.since !== race.intro.course.since) started.current = { since: race.intro.course.since, at: performance.now() };
+  const delay = Math.max(0, (race.intro.course.globe ? 7.4 : 3) - (performance.now() - started.current.at) / 1000);
   return (
     <div className="absolute inset-0 overflow-hidden" data-testid="course-scene" data-race={race.id}>
       <div className="absolute inset-0 bg-[radial-gradient(75%_85%_at_50%_45%,#1a2c9c_0%,#0b1a86_45%,#020a48_100%)]" />
