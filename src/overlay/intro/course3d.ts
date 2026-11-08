@@ -41,6 +41,8 @@ const SPIN_END = 2.8, DIVE_END = 4.9, COURSE_AT = 4.5, GLOBE_GONE = 5.6;
 const ZOOM_S = 2.2, TILT_AT = 1.3, ENTRY_S = 4.2, DRAW_AT = 1.4, DRAW_S = 2.2;
 /** One orbit every this many seconds. */
 const ORBIT_S = 150;
+/** Started this far in (no globe), the camera is already orbiting and the path drawn: the backdrop of other scenes. */
+export const BACKDROP_SKIP = ENTRY_S + 1;
 
 const YELLOW = new THREE.Color("#FFED0D");
 const FOCUS = new THREE.Color("#38D4FF");
@@ -167,8 +169,10 @@ export class CourseView3D {
   private pieces: Span[];
   private pathLen: number;
 
-  constructor(host: HTMLElement, private venue: Venue, private track: Track, private distance: number, opts: CourseOptions, private world: World | null) {
+  constructor(host: HTMLElement, private venue: Venue, private track: Track, private distance: number, opts: CourseOptions, private world: World | null, skip = 0) {
     this.host = host;
+    // `skip` seconds into the course part: straight into the orbit
+    this.t0 -= skip * 1000;
     this.opts = opts;
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     this.renderer.setPixelRatio(1);

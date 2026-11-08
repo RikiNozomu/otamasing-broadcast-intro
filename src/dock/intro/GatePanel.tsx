@@ -1,5 +1,6 @@
-/** The การแข่งขัน tab's "Starting Gate" part: rows a page, which columns show, the page on screen. */
+/** The การแข่งขัน tab's "Starting Gate" part: rows a page, the backdrop, which columns show, the page on screen. */
 import { introOf, type Race } from "../../lib/model";
+import { courseOf } from "../../lib/venues";
 import { update, useData } from "../../lib/store";
 import { Button } from "../../components/Button";
 import { Field, inputClass } from "../../components/Field";
@@ -25,6 +26,12 @@ export function GatePanel({ race }: { race: Race }) {
           <input id="g-per" className={inputClass} type="number" min={4} max={18} value={g.perPage} onChange={(e) => setG({ perPage: Math.min(18, Math.max(4, Math.round(+e.target.value || 18))), page: 0 })} />
         </Field>
         <GatePages race={race} testId="gate-pages" />
+        <Switch on={g.backdrop === "course"} label="ฉากหลังเป็นสนาม 3D หมุนวน" testId="gate-backdrop-course" onToggle={() => setG({ backdrop: g.backdrop === "course" ? "photo" : "course" })} />
+        <span className={hintClass}>
+          {g.backdrop === "course" && !courseOf(race)
+            ? `ยังไม่มีข้อมูลสนาม "${race.course}" เลยใช้รูปฉากหลังแทน (เลือกสนามได้ที่ส่วนสนาม)`
+            : g.backdrop === "course" ? "ลู่สีเหลือง ความชัน และลูกศรตามที่ตั้งในส่วนสนาม · ปิดแล้วใช้รูปฉากหลังของรายการแทน" : "ใช้รูปฉากหลังของรายการ (ถ้าไม่มีรูปเป็นพื้นสีน้ำเงิน)"}
+        </span>
       </Section>
       <Section title="ช่องที่แสดง">
         {COLS.map(([k, label]) => (

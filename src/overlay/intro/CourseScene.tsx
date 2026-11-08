@@ -11,7 +11,7 @@ import { GOINGS, WEATHERS, type RaceRecord } from "../../lib/introSchema";
 import { cx } from "../../lib/cx";
 import { Flag } from "../../components/Flag";
 import { useLeaving } from "../leaving";
-import { CourseView3D, loadWorld, type World } from "./course3d";
+import { BACKDROP_SKIP, CourseView3D, loadWorld, type World } from "./course3d";
 import { EASE, IntroHeader, slant } from "./IntroHeader";
 import { HistoryModal } from "./HistoryModal";
 import { WeatherIcon } from "./WeatherIcon";
@@ -114,35 +114,54 @@ function Panels({ race, venue, track, delay }: { race: Race; venue: Venue; track
   return <div className="absolute right-[60px] bottom-[44px] left-[60px] flex items-end gap-5">{boxes}</div>;
 }
 
-/** The 3D canvas; built once per venue/track/distance (and when the dock replays it), options passed on live. */
-function Course3D({ race, venue, track }: { race: Race; venue: Venue; track: Track }) {
+/**
+ * The 3D canvas; built once per venue/track/distance (and when the dock replays it), options passed on live.
+ * As a `backdrop` (behind the STARTING GATE) it starts already orbiting, without the globe, START/FINISH or focus.
+ */
+function Course3D({ race, venue, track, backdrop = false }: { race: Race; venue: Venue; track: Track; backdrop?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<CourseView3D | null>(null);
-  const [world, setWorld] = useState<World | null | undefined>(race.intro.course.globe ? undefined : null);
-  const [failed, setFailed] = useState(false);
   const c = race.intro.course;
-  const opts = { path: c.path, elevation: c.elevation, elevationScale: c.elevationScale, startFinish: c.startFinish, chevrons: c.chevrons, focus: c.focus };
+  const globe = c.globe && !backdrop;
+  const [world, setWorld] = useState<World | null | undefined>(globe ? undefined : null);
+  const [failed, setFailed] = useState(false);
+  const opts = backdrop
+    ? { path: c.path, elevation: c.elevation, elevationScale: c.elevationScale, startFinish: false, chevrons: c.chevrons, focus: "none" as const }
+    : { path: c.path, elevation: c.elevation, elevationScale: c.elevationScale, startFinish: c.startFinish, chevrons: c.chevrons, focus: c.focus };
   useEffect(() => {
-    if (!c.globe) return;
+    if (!globe) return;
     let alive = true;
     loadWorld().then((w) => alive && setWorld(w));
     return () => { alive = false; };
-  }, [c.globe]);
+  }, [globe]);
   useEffect(() => {
     if (world === undefined || !host.current) return;
     try {
-      view.current = new CourseView3D(host.current, venue, track, race.distanceM ?? track.length, opts, c.globe ? world : null);
+      view.current = new CourseView3D(host.current, venue, track, race.distanceM ?? track.length, opts, globe ? world : null, backdrop ? BACKDROP_SKIP : 0);
     } catch {
       setFailed(true);
     }
     return () => { view.current?.dispose(); view.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- options are passed on below without rebuilding
-  }, [world, venue.id, track.id, race.distanceM, c.since]);
+  }, [world, venue.id, track.id, race.distanceM, backdrop ? 0 : c.since]);
   useEffect(() => { view.current?.setOptions(opts); });
   return (
-    <div ref={host} className="absolute inset-0" data-testid="course-3d" data-globe={c.globe ? "on" : "off"}>
+    <div ref={host} className="absolute inset-0" data-testid="course-3d" data-globe={globe ? "on" : "off"}>
       {failed && <div className="absolute inset-0 grid place-items-center font-display text-[40px] text-white/70">3D ใช้ไม่ได้ในเบราว์เซอร์นี้ (เปิด hardware acceleration ใน OBS)</div>}
     </div>
+  );
+}
+
+/** The race's course in 3D, slowly orbiting, dimmed behind another scene (the STARTING GATE). */
+export function CourseBackdrop({ race }: { race: Race }) {
+  const leaving = useLeaving();
+  const found = courseOf(race);
+  if (!found) return null;
+  return (
+    <motion.div className="absolute inset-0" data-testid="gate-backdrop" initial={{ opacity: 0 }} animate={{ opacity: leaving ? 0 : 0.9 }} transition={{ duration: leaving ? 0.3 : 1 }}>
+      <div className="absolute inset-0 bg-[radial-gradient(75%_85%_at_50%_45%,#1a2c9c_0%,#0b1a86_45%,#020a48_100%)]" />
+      <Course3D race={race} venue={found.venue} track={found.track} backdrop />
+    </motion.div>
   );
 }
 

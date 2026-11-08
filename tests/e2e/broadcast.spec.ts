@@ -200,6 +200,8 @@ test("pictures behind the STARTING GATE: step by hand or change automatically", 
   const shownKey = () => live(overlay).getByTestId("photo").last().getAttribute("data-key");
   await gateOn(dock);
   await gateEdit(dock);
+  // the race's pictures instead of the 3D course
+  await dock.getByTestId("gate-backdrop-course").click();
   await dock.getByTestId("add-photos-card").setInputFiles([png("a.png"), png("b.png")]);
   await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(2);
   // pictures are changed by hand by default
@@ -279,6 +281,7 @@ test("a .zip with the JSON and its pictures moves pictures to another browser (e
   await chrome.addInitScript(() => { delete (window as unknown as { showSaveFilePicker?: unknown }).showSaveFilePicker; });
   const { dock } = await open(chrome);
   await gateEdit(dock);
+  await dock.getByTestId("gate-backdrop-course").click(); // pictures behind the gate, not the 3D course
   await dock.getByTestId("add-photos-card").setInputFiles([png("a.png")]);
   await expect(dock.getByTestId("thumbs-card").locator("[data-thumb]")).toHaveCount(1);
   await dock.getByRole("tab", { name: "ภาพรวม" }).click();

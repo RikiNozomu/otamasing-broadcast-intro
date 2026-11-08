@@ -110,6 +110,8 @@ export const RunnerViewSchema = z.object({
 export const GridViewSchema = z.object({
   page: z.number().int().min(0).default(0),
   perPage: z.number().int().min(4).max(18).default(18),
+  /** Behind the rows: the course in 3D slowly orbiting (when the venue is known), or the race's photos. */
+  backdrop: z.enum(["course", "photo"]).default("course"),
   show: z.object({
     draw: z.boolean().default(true),
     number: z.boolean().default(true),

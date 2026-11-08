@@ -11,6 +11,7 @@ import { cx } from "../lib/cx";
 import { Button, buttonClass } from "../components/Button";
 import { inputClass } from "../components/Field";
 import { Section, hintClass } from "../components/Section";
+import { courseOf } from "../lib/venues";
 import { Switch } from "../components/Switch";
 
 const view = "card";
@@ -90,7 +91,7 @@ export function PhotoSetEditor({ race }: { race: Race }) {
           </label>
         </>
       )}
-      <span className={hintClass}>เลือกได้หลายรูปพร้อมกัน · กดรูปเล็กเพื่อขึ้นจอรูปนั้น · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
+      <span className={hintClass}>{race.intro.grid.backdrop === "course" && courseOf(race) ? "ตอนนี้ฉากหลังเป็นสนาม 3D รูปจะขึ้นเมื่อปิด \"ฉากหลังเป็นสนาม 3D หมุนวน\" ด้านบน · " : ""}เลือกได้หลายรูปพร้อมกัน · กดรูปเล็กเพื่อขึ้นจอรูปนั้น · รูปเก็บในเครื่องนี้ ไม่อยู่ในไฟล์ JSON</span>
     </Section>
   );
 }

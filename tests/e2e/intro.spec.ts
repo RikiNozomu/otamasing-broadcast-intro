@@ -153,6 +153,23 @@ test("runner intro goes through the field in gate order; STARTING GATE lists eve
   await expect(live(overlay).locator("[data-testid=grid-scene] [data-no]")).toHaveCount(5);
 });
 
+test("STARTING GATE: the course in 3D orbits behind the rows; switched off, the race's photos instead", async ({ context }) => {
+  test.slow();
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("button", { name: "ตั้งGate 11R Sample Cup เป็น Active" }).click();
+  const scene = live(overlay).getByTestId("grid-scene");
+  await expect(scene.locator("[data-no]")).toHaveCount(17);
+  const backdrop = scene.getByTestId("gate-backdrop");
+  await expect(backdrop.getByTestId("course-canvas")).toBeAttached({ timeout: 20_000 });
+  // straight into the orbit: no globe, no START/FINISH labels over the rows
+  await expect(backdrop.getByTestId("course-3d")).toHaveAttribute("data-globe", "off");
+  await expect(backdrop.getByTestId("course-3d")).toHaveAttribute("data-phase", "course");
+  await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
+  await dock.locator("#sub-grid").click();
+  await dock.getByTestId("gate-backdrop-course").click();
+  await expect(scene.getByTestId("gate-backdrop")).toHaveCount(0);
+});
+
 test("jockeys tab: add the riders from the race card; a cut-out photo stands on the right of the runner intro", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("tab", { name: "จ็อกกี้" }).click();
