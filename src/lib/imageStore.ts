@@ -12,22 +12,32 @@ export async function storeImage(f: File): Promise<string> {
 }
 
 /** Store a video under a new video/<date-time>.<ext> name; also returns its length in seconds (null if unknown). */
-export async function storeVideo(f: File): Promise<{ name: string; duration: number | null }> {
+export async function storeVideo(f: File): Promise<{ name: string; duration: number | null; error: string | null }> {
   const name = videoName(f);
   await putImage(name, f);
-  return { name, duration: await videoDuration(f) };
+  return { name, ...(await probeVideo(f)) };
 }
 
-/** Length of a video file in seconds, read from its metadata (null when the browser can't read it). */
-export function videoDuration(f: Blob): Promise<number | null> {
+/**
+ * Open a video file the way the overlay will: its length in seconds from the metadata, or the browser's error
+ * when it can't open the file at all (a codec it doesn't have, e.g. HEVC, or a damaged file). Both null when
+ * reading it took too long.
+ */
+export function probeVideo(f: Blob): Promise<{ duration: number | null; error: string | null }> {
   return new Promise((res) => {
     const url = URL.createObjectURL(f);
     const v = document.createElement("video");
-    const done = (x: number | null) => { URL.revokeObjectURL(url); res(x); };
+    let over = false;
+    const done = (duration: number | null, error: string | null) => {
+      if (over) return;
+      over = true;
+      URL.revokeObjectURL(url);
+      res({ duration, error });
+    };
     v.preload = "metadata";
-    v.onloadedmetadata = () => done(Number.isFinite(v.duration) && v.duration > 0 ? Math.round(v.duration * 10) / 10 : null);
-    v.onerror = () => done(null);
-    setTimeout(() => done(null), 8000);
+    v.onloadedmetadata = () => done(Number.isFinite(v.duration) && v.duration > 0 ? Math.round(v.duration * 10) / 10 : null, null);
+    v.onerror = () => done(null, [v.error?.code != null ? `code ${v.error.code}` : "", v.error?.message].filter(Boolean).join(" · ") || "error");
+    setTimeout(() => done(null, null), 8000);
     v.src = url;
   });
 }

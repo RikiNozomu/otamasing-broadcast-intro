@@ -2,11 +2,14 @@
  * Starting gate (1920x1080): every runner top to bottom in gate order, one a row, all rows lined up straight.
  * Gate and number boxes, silks, horse, horse weight, jockey, weight;
  * each can be hidden. Rows come in one after another from the top; more than `perPage` runners make pages.
+ * Behind them the course in 3D slowly orbiting (or the race's photos).
  */
 import { AnimatePresence, motion } from "motion/react";
+import { lazy, Suspense, type CSSProperties } from "react";
 import type { Race, Runner } from "../../lib/model";
 import { boxColors, drawOf } from "../../lib/colors";
 import { gridPage, horseFor, stallOf } from "../../lib/intro";
+import { courseOf } from "../../lib/venues";
 import { useData } from "../../lib/store";
 import { cx } from "../../lib/cx";
 import { Flag } from "../../components/Flag";
@@ -19,6 +22,9 @@ import { EASE, IntroHeader } from "./IntroHeader";
 const TOP = 262, BOTTOM = 1040, LEFT = 60;
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
 
+// the 3D course behind the rows comes with three.js, in the course scene's chunk
+const CourseBackdrop = lazy(() => import("./CourseScene").then((m) => ({ default: m.CourseBackdrop })));
+
 export function GridScene({ race }: { race: Race }) {
   const d = useData();
   const leaving = useLeaving();
@@ -29,6 +35,8 @@ export function GridScene({ race }: { race: Race }) {
   const font = Math.round(rowH * 0.66);
   const box = Math.round(rowH * 1.45);
   const width = 1920 - 2 * LEFT;
+  // over the 3D course the bands turn to glass so the course shows through
+  const glass = g.backdrop === "course" && !!courseOf(race);
   const anyHorseWeight = show.horseWeight && race.runners.some((h) => h.horseWeight != null);
   const anyWeight = show.weight && race.runners.some((h) => h.weight != null);
   const cols = [show.draw ? `${box}px` : null, show.number ? `${box}px` : null, show.silks ? `${Math.round(rowH * 1.5)}px` : null, "minmax(0,1.25fr)",
@@ -81,11 +89,13 @@ export function GridScene({ race }: { race: Race }) {
   };
   return (
     <div className="absolute inset-0 bg-scene" data-testid="grid-scene" data-race={race.id} data-page={page + 1}>
-      <RacePhoto photos={race.photos.card} logo={false} />
+      {glass
+        ? <Suspense fallback={null}><CourseBackdrop race={race} /></Suspense>
+        : <RacePhoto photos={race.photos.card} logo={false} />}
       {/* the left edge stripes of the grid, like the painted grid boxes */}
       <div className="absolute inset-y-0 left-0 w-[14px] bg-yellow" />
       <IntroHeader race={race} tag="STARTING GATE" />
-      <div className="absolute grid content-start" data-testid="grid-rows" style={{ left: LEFT, top: TOP, rowGap: pitch - rowH }}>
+      <div className="absolute grid content-start" data-testid="grid-rows" style={{ left: LEFT, top: TOP, rowGap: pitch - rowH, ...(glass ? { "--color-band": "rgb(44 48 96 / .58)" } : {}) } as CSSProperties}>
         <AnimatePresence initial={false} mode="popLayout">
           {rows.map(row)}
         </AnimatePresence>

@@ -739,6 +739,14 @@
                         "maximum": 18,
                         "default": 18
                       },
+                      "backdrop": {
+                        "type": "string",
+                        "enum": [
+                          "course",
+                          "photo"
+                        ],
+                        "default": "course"
+                      },
                       "show": {
                         "type": "object",
                         "properties": {
