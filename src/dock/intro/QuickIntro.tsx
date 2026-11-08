@@ -4,7 +4,8 @@ import { gridPage, introRunners, setRunnerAuto, showRunner, useIntroRunner } fro
 import { PageButtons } from "../../components/PageButtons";
 import { Button } from "../../components/Button";
 import { Switch } from "../../components/Switch";
-import { INTRO_LABEL, setIntro } from "./shared";
+import { FOCUS_LABEL, INTRO_LABEL, setIntro, toggleHistory } from "./shared";
+import { HistoryPicks } from "./HistoryPicks";
 import { updateRace } from "../../lib/store";
 
 export { INTRO_LABEL };
@@ -34,19 +35,36 @@ export function GatePages({ race, testId }: { race: Race; testId?: string }) {
   return <PageButtons label="หน้า" count={g.pageCount} page={g.page} testId={testId} onPick={(i) => setIntro(race.id, (x) => ({ ...x, grid: { ...x.grid, page: i } }))} />;
 }
 
+/** The quick highlight picks: everything that is a straight, every corner, or nothing (one part at a time is in the สนาม tab). */
+const QUICK_FOCUS = ["straights", "corners", "none"] as const;
+
 export function QuickIntro({ race, view }: { race: Race; view: IntroView }) {
   const c = race.intro.course, h = race.intro.history;
+  const setCourse = (p: Partial<typeof c>) => setIntro(race.id, (x) => ({ ...x, course: { ...x.course, ...p } }));
+  // the race's path, the chevrons and START/FINISH go on and off together here (one at a time in the สนาม tab)
+  const marks = c.path && c.chevrons && c.startFinish;
   return (
     <div className="mt-1 ml-[26px] grid gap-1.5 border-l-2 border-yellow pl-2.5" data-testid={`quick-${view}`} aria-label={`ควบคุม${INTRO_LABEL[view]}`}>
       {view === "course" && (
         <div className="flex flex-wrap gap-1.5">
-          <Button onClick={() => setIntro(race.id, (x) => ({ ...x, course: { ...x.course, since: Date.now() } }))}>เล่นใหม่ (เริ่มจากโลก)</Button>
-          <Button variant={h.open ? "primary" : "default"} aria-pressed={h.open} onClick={() => setIntro(race.id, (x) => ({ ...x, history: { ...x.history, open: !x.history.open, play: x.history.open ? null : x.history.play } }))}>
+          <Button onClick={() => setCourse({ since: Date.now() })}>เล่นใหม่ (เริ่มจากโลก)</Button>
+          <Button variant={h.open ? "primary" : "default"} aria-pressed={h.open} onClick={() => toggleHistory(race.id)}>
             {h.open ? "ปิดประวัติ" : "เปิดประวัติ"}
           </Button>
-          <Button variant={c.elevation ? "primary" : "default"} aria-pressed={c.elevation} onClick={() => setIntro(race.id, (x) => ({ ...x, course: { ...x.course, elevation: !x.course.elevation } }))}>ความชัน 3D</Button>
+          <Button variant={c.elevation ? "primary" : "default"} aria-pressed={c.elevation} onClick={() => setCourse({ elevation: !c.elevation })}>ความชัน 3D</Button>
+          <Button variant={marks ? "primary" : "default"} aria-pressed={marks} data-testid="quick-marks" onClick={() => setCourse({ path: !marks, chevrons: !marks, startFinish: !marks })}>ลู่ + ลูกศร + START</Button>
+          <Button variant={c.showPanels ? "primary" : "default"} aria-pressed={c.showPanels} data-testid="quick-panels" onClick={() => setCourse({ showPanels: !c.showPanels })}>กล่องข้อมูล</Button>
         </div>
       )}
+      {view === "course" && (
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="ไฮไลต์ทางตรง/โค้ง" data-testid="quick-focus">
+          <span className="text-xs text-ink-muted">ไฮไลต์</span>
+          {QUICK_FOCUS.map((f) => (
+            <Button key={f} variant={c.focus === f ? "primary" : "default"} aria-pressed={c.focus === f} onClick={() => setCourse({ focus: f })}>{FOCUS_LABEL[f]}</Button>
+          ))}
+        </div>
+      )}
+      {view === "course" && h.open && <HistoryPicks race={race} />}
       {view === "runner" && (introRunners(race).length ? <RunnerStepper race={race} /> : <span className="text-xs text-ink-muted">ไม่มีม้า</span>)}
       {view === "grid" && <GatePages race={race} testId="quick-gate-pages" />}
     </div>

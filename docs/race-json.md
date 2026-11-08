@@ -148,6 +148,7 @@
 | `course.startFinish` | boolean | `true` | จุดปล่อยตัว (START) และเส้นชัย (FINISH) |
 | `course.chevrons` | boolean | `true` | ลูกศร chevron วิ่งตามทิศทางการแข่ง |
 | `course.focus` | `"none"` `"straights"` `"corners"` `"home"` `"back"` `"c1"`–`"c4"` | `"none"` | ไฮไลต์ทางตรง/โค้ง (สีฟ้า พร้อมป้ายชื่อ) |
+| `course.showPanels` | boolean | `true` | แสดงกล่องข้อมูลด้านล่าง (ปิดแล้วซ่อนทุกกล่องทีเดียว แต่จำว่าเลือกกล่องไหนไว้) |
 | `course.panels` | `{ venue, distance, records, weather }` | `true`, `true`, `false`, `false` | กล่องข้อมูลด้านล่าง: สนาม (ชื่อ ที่ตั้ง ประเทศ ธง), ระยะ (โค้งที่ผ่าน ความชัน Back/Home stretch และทิศ), สถิติ (ขึ้นเมื่อมีเวลา), อากาศและสภาพสนาม (ขึ้นเมื่อมีอย่างใดอย่างหนึ่ง) |
 | `records.course` / `records.race` | `{ time, horse, jockey, date }` | ว่าง | สถิติสนาม (Course record) / สถิติรายการ (Race record) เช่น `{ "time": "2:09.7", "horse": "Neptunite", "jockey": "A. Starke", "date": "2019-04-21" }` |
 | `weather` | `{ condition, tempC, windMs, source }` | ว่าง | สภาพอากาศ: `condition` เป็น `"sunny"` `"partly"` `"cloudy"` `"fog"` `"drizzle"` `"rain"` `"snow"` `"storm"` หรือ `null`, อุณหภูมิ °C, ลม m/s, `source` `"manual"` หรือ `"forecast"` (ปุ่มดึงพยากรณ์ Open-Meteo ณ เวลาออกตัว ได้ประมาณ 15 วันล่วงหน้า แก้ต่อได้) |

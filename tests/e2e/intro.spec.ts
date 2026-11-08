@@ -89,6 +89,62 @@ test("history: cards in a modal over the course, a picked card's video plays wit
   await expect(live(overlay).getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 2500 });
 });
 
+test("overview: quick buttons under the Active course scene switch the marks, highlights and boxes, and pick and play history cards", async ({ context }) => {
+  test.slow();
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("button", { name: "ตั้งสนาม 11R Sample Cup เป็น Active" }).click();
+  // a video for one of the moments, from the history tab
+  await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
+  await dock.locator("#sub-history").click();
+  await dock.getByRole("button", { name: "A photo finish", exact: true }).click();
+  await dock.getByTestId("history-video-file").setInputFiles(fixture("clip.webm"));
+  await expect(dock.getByTestId("history-video-name")).toBeVisible();
+  await dock.getByRole("tab", { name: "ภาพรวม" }).click();
+  const quick = dock.getByTestId("quick-course");
+  const scene = live(overlay).getByTestId("course-scene");
+  const view = scene.getByTestId("course-3d");
+  // the race's path, the chevrons and START/FINISH: one button for all three
+  await expect(view).toHaveAttribute("data-marks", "path start chevrons", { timeout: 20_000 });
+  await quick.getByTestId("quick-marks").click();
+  await expect(view).toHaveAttribute("data-marks", "none");
+  await expect(quick.getByTestId("quick-marks")).toHaveAttribute("aria-pressed", "false");
+  await quick.getByTestId("quick-marks").click();
+  await expect(view).toHaveAttribute("data-marks", "path start chevrons");
+  // highlights: every straight, every corner, nothing
+  const focus = quick.getByTestId("quick-focus");
+  await focus.getByRole("button", { name: "ทางตรงทั้งหมด" }).click();
+  await expect(view).toHaveAttribute("data-focus", "straights");
+  await focus.getByRole("button", { name: "ทางโค้งทั้งหมด" }).click();
+  await expect(view).toHaveAttribute("data-focus", "corners");
+  await expect(focus.getByRole("button", { name: "ทางโค้งทั้งหมด" })).toHaveAttribute("aria-pressed", "true");
+  await focus.getByRole("button", { name: "ไม่ไฮไลต์" }).click();
+  await expect(view).toHaveAttribute("data-focus", "none");
+  // every box at once, and back (the same ones: the records box stays as it was picked)
+  await expect(scene.getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 20_000 });
+  await quick.getByTestId("quick-panels").click();
+  await expect(scene.getByTestId("panel-venue")).toHaveCount(0);
+  await expect(scene.getByTestId("panel-distance")).toHaveCount(0);
+  await quick.getByTestId("quick-panels").click();
+  await expect(scene.getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 4000 });
+  await expect(scene.getByTestId("panel-distance")).toBeVisible();
+  // history: the cards to pick from show while the modal is open, with play/stop for the ones with a video
+  await expect(dock.getByTestId("quick-history")).toHaveCount(0);
+  await quick.getByRole("button", { name: "เปิดประวัติ" }).click();
+  const picks = dock.getByTestId("quick-history");
+  await expect(picks.getByTestId("quick-history-row")).toHaveCount(3);
+  const modal = live(overlay).getByTestId("history-modal");
+  await picks.getByRole("button", { name: "จิ้มการ์ด A photo finish" }).click();
+  await expect(modal.locator("[data-testid=history-card][data-on]")).toHaveAttribute("data-item", "hist-2");
+  await expect(picks.getByRole("button", { name: /^เล่นวิดีโอ/ })).toHaveCount(1);
+  await picks.getByRole("button", { name: "เล่นวิดีโอ A photo finish" }).click();
+  const player = modal.getByTestId("history-player");
+  await expect(player).toHaveAttribute("data-item", "hist-2");
+  await expect(picks.getByTestId("quick-history-screen")).toContainText("จอ:");
+  await picks.getByRole("button", { name: "หยุดวิดีโอ A photo finish" }).click();
+  await expect(player).toHaveCount(0, { timeout: 5000 });
+  await expect(picks.getByRole("button", { name: "เล่นวิดีโอ A photo finish" })).toBeVisible();
+});
+
 test("history: a file the browser can't open gets a warning in the dock, and the dock says the screen can't play it", async ({ context }) => {
   const { dock, overlay } = await open(context);
   await dock.getByRole("button", { name: "ตั้งสนาม 11R Sample Cup เป็น Active" }).click();

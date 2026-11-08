@@ -419,6 +419,10 @@
                         ],
                         "default": "none"
                       },
+                      "showPanels": {
+                        "type": "boolean",
+                        "default": true
+                      },
                       "panels": {
                         "type": "object",
                         "properties": {
