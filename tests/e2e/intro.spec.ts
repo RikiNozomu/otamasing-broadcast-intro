@@ -100,11 +100,16 @@ test("runner intro goes through the field in gate order; STARTING GATE lists eve
   // the change sits right after the weight; the label says what the number is
   await expect(runner.getByTestId("horse-weight")).toContainText(/^440\s*\(-8\)\s*HORSE WEIGHT \(KG\)$/);
   await expect(scene.getByTestId("gate-band")).toHaveAttribute("data-stall", "1");
+  // the rail post stands beside stall 1 ...
+  const postX = async () => Math.round((await scene.getByTestId("gate-post").boundingBox())?.x ?? NaN);
+  await expect.poll(postX).toBe(226);
   const quick = dock.getByTestId("quick-runner");
   for (const no of ["2", "3", "4", "5", "7"]) { // 6 is scratched
     await quick.getByRole("button", { name: "ม้าตัวถัดไป" }).click();
     await expect(scene.getByTestId("gate-band")).toHaveAttribute("data-stall", no);
   }
+  // ... and slides away with the whole gate: stall 7 now sits where stall 1 was
+  await expect.poll(postX, { timeout: 5000 }).toBe(226 - 6 * 118);
   await expect(scene.getByTestId("scene-tag")).toContainText("6 / 17");
 
   await dock.getByRole("button", { name: "ตั้งGate 11R Sample Cup เป็น Active" }).click();
