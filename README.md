@@ -49,6 +49,6 @@ Stack: Vite + React + TypeScript, [Tailwind CSS v4](https://tailwindcss.com), [M
 
 ## ที่มาของข้อมูล
 
-- รูปสนาม: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL) ตัวเลขสนาม (ความยาวรอบ ทางตรง ความชัน) และสถิติ: JRA
+- รูปสนาม: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL) ตัวเลขสนาม (ความยาวรอบ ทางตรง ความชัน) และสถิติ: JRA ความสูงต่ำตลอดลู่: แผนภาพ Course Undulation ของ JRA ([Kyoto](https://japanracing.jp/en/racing/go_racing/jra_racecourses/course_details/kyoto.html))
 - เส้นโลก: [Natural Earth](https://www.naturalearthdata.com) (public domain)
 - ฟอนต์ Otamasing Display / Otamasing Sans (OFL) อยู่ใน `public/fonts` ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)

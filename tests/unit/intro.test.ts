@@ -57,6 +57,19 @@ describe("venues", () => {
       expect(h).toBeLessThanOrEqual(outer.height + 0.01);
     }
   });
+  it("the outer course's hill follows JRA's undulation chart: top early in the 3rd corner, down through it, a dip in the home straight", () => {
+    const c3 = outer.sections.find((x) => x.id === "c3")!, back = outer.sections.find((x) => x.id === "back")!;
+    let top = 0;
+    for (let s = 0; s < outer.length; s += 2) if (heightAt(outer, s) > heightAt(outer, top)) top = s;
+    expect(top).toBeGreaterThan(c3.from);
+    expect(top).toBeLessThan(c3.from + (c3.to - c3.from) / 3);
+    expect(heightAt(outer, top)).toBeCloseTo(4.3, 1);
+    // flat for the first part of the back straight, about half-way up by the start of the 3rd corner
+    expect(heightAt(outer, back.from + 100)).toBeLessThan(0.5);
+    expect(heightAt(outer, c3.from)).toBeGreaterThan(2.5);
+    expect(heightAt(outer, c3.to)).toBeLessThan(1);
+    expect(heightAt(outer, outer.length - 300)).toBeLessThan(heightAt(outer, 0));
+  });
 });
 
 describe("runner intro and starting gate", () => {

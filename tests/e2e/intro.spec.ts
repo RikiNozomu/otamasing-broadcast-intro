@@ -19,7 +19,8 @@ test("course scene: the globe turns in, then the course; options switch while it
   await dock.getByRole("button", { name: "ตั้งสนาม 11R Sample Cup เป็น Active" }).click();
   await expect(dock.getByTestId("active-tag")).toHaveText("Active: 11R สนาม");
   const scene = live(overlay).getByTestId("course-scene");
-  await expect(scene.getByTestId("scene-tag")).toHaveText("THE COURSE");
+  // the course scene (with three.js) is its own chunk, loaded on first use: slow while other tests run alongside
+  await expect(scene.getByTestId("scene-tag")).toHaveText("THE COURSE", { timeout: 20_000 });
   const view = scene.getByTestId("course-3d");
   await expect(view).toHaveAttribute("data-globe", "on");
   await expect(view.getByTestId("course-canvas")).toBeAttached();

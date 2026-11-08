@@ -16,8 +16,8 @@ What it writes, all in metres on a flat plane around the venue's centre (x = eas
   centre line from the far end to that point.
 
 Track shapes © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright).
-Heights are a smooth approximation of the authority's course diagram: only the total height difference
-and where the hill is (which part of which section) come from the source; see HILLS below.
+Heights follow the authority's undulation chart of each course: the chart's corner points (read off the
+image) joined by straight lines, lifted so the lowest point is 0 and scaled to the published height difference.
 """
 import json
 import math
@@ -35,8 +35,11 @@ CACHE = HERE / "cache"
 
 # Course facts: JRA course guide (jra.go.jp/facilities/race/kyoto/course/), Kyoto after the 2023 renovation.
 # `rails`: OSM ways whose polygons together are the infield of this course (their outside edge is the inside rail).
-# `hill`: where the height changes, as (section, fraction along it) pairs: up from `rise` to the top at `peak`,
-# down to `fall`. Kyoto's hill ("淀の坂") rises along the back straight into the 3rd corner and drops through the 4th.
+# `undulation`: the corner points of the course's undulation chart as [metres before the winning post, height in m]
+# (the chart runs from the post backwards: home straight, 4th corner, 3rd corner, ...). Kyoto: JRA's course details,
+# https://japanracing.jp/en/racing/go_racing/jra_racecourses/course_details/kyoto.html (img/kyoto_im02.gif, kyoto_im03.gif).
+# Kyoto's hill ("淀の坂") climbs from the middle of the back straight to the top early in the 3rd corner, then drops
+# steeply through the 3rd corner; the home straight dips a little.
 # `chute`: the two OSM nodes at the chute's far end and the section it runs into. JRA: "2コーナーの奥にはバックストレッチに
 # 連なる長い引き込み線が設けられており、外回りの芝1600メートルと芝1800メートル、内回りの芝1600メートルは、向正面左手の
 # 奥深い地点からスタートを切ることになる".
@@ -54,13 +57,16 @@ VENUES = {
         "tracks": [
             {"id": "turf-outer", "label": "Turf (Outer)", "surface": "Turf", "rails": ["526656543", "526656542"], "offset": 4,
              "length": 1894.3, "homestretch": 403.7, "height": 4.3,
-             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.55], "fall": ["c4", 0.95]}, "chute": KYOTO_CHUTE},
+             "undulation": [[0, -0.1], [310, -0.3], [680, 0.4], [830, 3.9], [1080, 2.1], [1180, 0.1], [1894.3, -0.1]],
+             "chute": KYOTO_CHUTE},
             {"id": "turf-inner", "label": "Turf (Inner)", "surface": "Turf", "rails": ["526656543"], "offset": 4,
              "length": 1782.8, "homestretch": 328.4, "height": 3.1,
-             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.5], "fall": ["c4", 0.95]}, "chute": KYOTO_CHUTE},
+             "undulation": [[0, -0.1], [285, -0.4], [600, 0.1], [630, 0.3], [775, 2.8], [895, 2.8], [1065, 0.1], [1782.8, -0.1]],
+             "chute": KYOTO_CHUTE},
             {"id": "dirt", "label": "Dirt", "surface": "Dirt", "rails": ["526656545"], "offset": 3,
              "length": 1607.6, "homestretch": 329.1, "height": 3.0,
-             "hill": {"rise": ["back", 0.45], "peak": ["c3", 0.5], "fall": ["c4", 0.95]}},
+             "undulation": [[0, -0.1], [525, -0.1], [730, 2.4], [820, 2.7], [840, 2.7], [1045, 0.2], [1260, -0.2], [1385, 0.1],
+                            [1607.6, -0.1]]},
         ],
         # every track edge in the area, drawn as thin context lines
         "outline": ["526656541", "526656542", "526656543", "526656544", "526656545", "526656546", "526656548"],
@@ -194,22 +200,23 @@ def build_track(cfg, ways, nodes, proj, plot=None):
     # the home straight runs from the end of the 4th corner, through the post, to the 1st corner
     sections.insert(0, {"id": "home", "kind": "straight", "from": round(c4_end - cfg["length"], 1), "to": sections[0]["from"]})
 
-    # height profile: flat, smooth rise to the top, smooth fall
+    # height profile from the undulation chart: metres before the post -> metres after it (s = length - u),
+    # straight lines between the chart's points, lowest point 0, highest point = the published height difference
     sec = {x["id"]: x for x in sections}
-    at = lambda ref: sec[ref[0]]["from"] + (sec[ref[0]]["to"] - sec[ref[0]]["from"]) * ref[1]  # noqa: E731
-    h = cfg["hill"]
-    rise, peak, fall = at(h["rise"]), at(h["peak"]), at(h["fall"])
-    smooth = lambda t: t * t * (3 - 2 * t)  # noqa: E731
+    und = sorted(cfg["undulation"])
+    lo, hi = min(z for _, z in und), max(z for _, z in und)
+    k = cfg["height"] / (hi - lo)
+
+    def chart(u):
+        for (u0, z0), (u1, z1) in zip(und, und[1:]):
+            if u0 <= u <= u1:
+                return z0 + (z1 - z0) * (u - u0) / (u1 - u0)
+        return und[-1][1]
+
     prof = []
     for i in range(0, int(cfg["length"]) + 1, 10):
         s = float(i)
-        if rise <= s <= peak:
-            z = cfg["height"] * smooth((s - rise) / (peak - rise))
-        elif peak < s <= fall:
-            z = cfg["height"] * smooth(1 - (s - peak) / (fall - peak))
-        else:
-            z = 0.0
-        prof.append([round(s, 1), round(z, 2)])
+        prof.append([round(s, 1), round((chart(cfg["length"] - s) - lo) * k, 2)])
 
     simple = LineString(pts + [pts[0]]).simplify(0.25).coords[:-1]
     out = {
