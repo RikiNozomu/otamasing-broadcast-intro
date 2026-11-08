@@ -9,7 +9,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Race } from "../../lib/model";
 import type { HistoryItem } from "../../lib/introSchema";
 import { horseFor, playingItem } from "../../lib/intro";
-import { useImage } from "../../lib/images";
+import { getImage } from "../../lib/images";
+import { failureOf, writeVideoStatus, type VideoState } from "../../lib/videoStatus";
 import { useData } from "../../lib/store";
 import { cx } from "../../lib/cx";
 import { Flag } from "../../components/Flag";
@@ -56,11 +57,33 @@ function HorseChip({ name, small }: { name: string; small?: boolean }) {
 
 function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded: () => void }) {
   const d = useData();
-  const url = useImage(item.video ?? "", item.video ? d.images[item.video] : undefined);
+  const rev = item.video ? d.images[item.video] : undefined;
+  const [url, setUrl] = useState<string | null>(null);
   const ref = useRef<HTMLVideoElement>(null);
   const ramp = useVolumeRamp();
   const fadingOut = useRef(false);
   const [isPresent, safeToRemove] = usePresence();
+  // tell the dock how it goes (videoStatus.ts); while playing, at most once a second
+  const lastReport = useRef(0);
+  const report = (state: VideoState, detail?: string) => {
+    lastReport.current = Date.now();
+    writeVideoStatus({ id: item.id, at, state, t: ref.current?.currentTime ?? 0, detail });
+  };
+
+  // the file from this browser's store: not there means the dock that picked it isn't in this browser
+  useEffect(() => {
+    let alive = true, made: string | null = null;
+    report("loading");
+    if (!item.video) return;
+    getImage(item.video).then((b) => {
+      if (!alive) return;
+      if (!b) return report("missing");
+      made = URL.createObjectURL(b);
+      setUrl(made);
+    }).catch((e) => alive && report("failed", String(e)));
+    return () => { alive = false; if (made) URL.revokeObjectURL(made); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.video, rev]);
 
   useEffect(() => {
     const v = ref.current;
@@ -71,11 +94,14 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
     const late = (Date.now() - at) / 1000;
     if (late > 1.5) v.currentTime = late;
     v.muted = false;
-    v.play().then(() => ramp(v, 1, FADE_IN_MS)).catch(() => {
+    // a hidden tab doesn't start videos until it is shown
+    if (document.hidden) report("hidden");
+    v.play().then(() => ramp(v, 1, FADE_IN_MS)).catch((e: DOMException) => {
+      if (e.name !== "NotAllowedError") return report(failureOf(v.error ?? e).state, failureOf(v.error ?? e).detail);
       // a normal browser may refuse sound without a click (OBS plays it): play muted rather than not at all
       v.muted = true;
       v.dataset.muted = "true";
-      v.play().catch(() => {});
+      v.play().catch((e2: DOMException) => { const f = failureOf(v.error ?? e2); report(f.state, f.detail); });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
@@ -91,7 +117,9 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
 
   const onTime = () => {
     const v = ref.current;
-    if (!v || fadingOut.current || !v.duration) return;
+    if (!v) return;
+    if (Date.now() - lastReport.current >= 1000 && !v.paused) report(v.muted ? "muted" : "playing");
+    if (fadingOut.current || !v.duration) return;
     if (v.duration - v.currentTime <= FADE_OUT_MS / 1000) {
       fadingOut.current = true;
       ramp(v, 0, Math.max(100, (v.duration - v.currentTime) * 1000));
@@ -102,7 +130,12 @@ function Player({ item, at, onEnded }: { item: HistoryItem; at: number; onEnded:
     <motion.div layoutId={`history-${item.id}`} data-testid="history-player" data-item={item.id}
       className="absolute inset-[28px] z-10 overflow-hidden bg-black shadow-[0_30px_80px_rgb(0_0_0/.6)]"
       transition={{ duration: 0.6, ease: EASE }}>
-      {url && <video ref={ref} src={url} playsInline className="absolute inset-0 h-full w-full object-cover" onTimeUpdate={onTime} onEnded={onEnded} data-testid="history-video" />}
+      {url && (
+        <video ref={ref} src={url} playsInline className="absolute inset-0 h-full w-full object-cover" data-testid="history-video"
+          onTimeUpdate={onTime} onPlaying={(e) => report(e.currentTarget.muted ? "muted" : "playing")}
+          onError={(e) => { const f = failureOf(e.currentTarget.error); report(f.state, f.detail); }}
+          onEnded={() => { report("ended"); onEnded(); }} />
+      )}
       {/* lower third: date, title, text, the horses in it */}
       <motion.div className="absolute inset-x-0 bottom-0 grid gap-2 bg-[linear-gradient(180deg,transparent,rgb(2_8_50/.92)_38%)] px-12 pt-24 pb-10 text-white"
         initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.7, duration: 0.5, ease: EASE } }} exit={{ opacity: 0 }}>

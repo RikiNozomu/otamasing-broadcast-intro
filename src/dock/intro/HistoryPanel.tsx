@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { introOf, newId, type Race } from "../../lib/model";
 import type { HistoryItem } from "../../lib/introSchema";
 import { playingItem } from "../../lib/intro";
+import { readVideoStatus, videoStatusText } from "../../lib/videoStatus";
 import { dropUnused, storeVideo } from "../../lib/imageStore";
 import { update, useData } from "../../lib/store";
 import { cx } from "../../lib/cx";
@@ -30,17 +31,26 @@ function useTick(on: boolean) {
 
 function ItemEditor({ race, item }: { race: Race; item: HistoryItem }) {
   const [busy, setBusy] = useState(false);
+  const [warn, setWarn] = useState<string | null>(null);
   const set = (p: Partial<HistoryItem>) => setIntro(race.id, (x) => ({ ...x, history: { ...x.history, items: x.history.items.map((y) => (y.id === item.id ? { ...y, ...p } : y)) } }));
   const names = [...new Set(race.runners.map((h) => h.name).filter(Boolean))];
   const addVideo = async (f: File | undefined) => {
     if (!f) return;
     setBusy(true);
+    setWarn(null);
     const old = item.video;
-    const { name, duration } = await storeVideo(f);
-    update((x) => ({ ...x, images: { ...x.images, [name]: Date.now() } }));
-    set({ video: name, duration });
-    setBusy(false);
-    await dropUnused([old]);
+    try {
+      const { name, duration, error } = await storeVideo(f);
+      update((x) => ({ ...x, images: { ...x.images, [name]: Date.now() } }));
+      set({ video: name, duration });
+      // the dock and the overlay are the same browser: if this one can't open it, the screen can't play it
+      if (error) setWarn(`เบราว์เซอร์นี้เปิดไฟล์ "${f.name}" ไม่ได้ จอก็จะเล่นไม่ได้ (ชนิดไฟล์หรือ codec ไม่รองรับ เช่น HEVC/H.265 จาก iPhone หรือไฟล์เสีย) แปลงเป็น MP4 (H.264) หรือ WebM แล้วเลือกใหม่ · ${error}`);
+      await dropUnused([old]);
+    } catch (e) {
+      setWarn(`เก็บวิดีโอไม่สำเร็จ (${e instanceof Error ? e.message : String(e)}) ไฟล์อาจใหญ่เกินที่เบราว์เซอร์นี้เก็บได้`);
+    } finally {
+      setBusy(false);
+    }
   };
   const removeVideo = async () => {
     const old = item.video;
@@ -75,6 +85,7 @@ function ItemEditor({ race, item }: { race: Race; item: HistoryItem }) {
         {item.video && <Button onClick={removeVideo}>ไม่ใช้วิดีโอ</Button>}
         {item.video && <span className="text-xs text-ink-muted" data-testid="history-video-name">{item.video}{item.duration ? ` · ${mmss(item.duration)}` : ""}</span>}
       </div>
+      {warn && <span className="text-xs text-danger-ink" role="alert" data-testid="history-video-warn">{warn}</span>}
       <span className={hintClass}>วิดีโอเก็บในเบราว์เซอร์เครื่องนี้ (ไฟล์ JSON มีแค่ชื่อ) ย้ายเครื่องใช้ .zip จาก Chrome · ใน OBS ติ๊ก "Control audio via OBS" ที่ Browser Source เพื่อให้เสียงเข้ามิกเซอร์</span>
     </motion.div>
   );
@@ -86,6 +97,8 @@ export function HistoryPanel({ race }: { race: Race }) {
   const [editing, setEditing] = useState<string | null>(null);
   const playing = playingItem(race);
   useTick(!!h.play);
+  // what the overlay says about this play (re-read every second while it plays)
+  const screen = videoStatusText(readVideoStatus(), h.play);
   const setH = (fn: (x: Race["intro"]["history"]) => Race["intro"]["history"]) => setIntro(race.id, (x) => ({ ...x, history: fn(x.history) }));
   const courseOn = d.active === introOf("course", race.id);
   const add = () => {
@@ -116,9 +129,12 @@ export function HistoryPanel({ race }: { race: Race }) {
       <Section title="Modal ประวัติ">
         <Switch on={h.open} label="เปิด modal ประวัติบนจอ" testId="history-open" onToggle={() => setH((x) => ({ ...x, open: !x.open, play: x.open ? null : x.play }))} />
         {playing && (
-          <div className="flex items-center justify-between gap-2 border border-yellow px-2.5 py-1.5 text-[13px]" role="status" data-testid="history-playing">
-            <span>▶ กำลังเล่น: {playing.year} {playing.title}</span>
-            <Button variant="danger" onClick={stop}>หยุด</Button>
+          <div className="grid gap-1 border border-yellow px-2.5 py-1.5 text-[13px]" role="status" data-testid="history-playing">
+            <div className="flex items-center justify-between gap-2">
+              <span>▶ กำลังเล่น: {playing.year} {playing.title}</span>
+              <Button variant="danger" onClick={stop}>หยุด</Button>
+            </div>
+            {screen && <span className={cx("text-xs", screen.bad ? "text-danger-ink" : "text-ink-muted")} data-testid="history-screen">{screen.text}</span>}
           </div>
         )}
         <span className={hintClass}>กด "เลือก" เพื่อเน้นการ์ดบนจอ · กด ▶ เพื่อเล่นวิดีโอ เสียงค่อยๆ ดังขึ้น จบแล้วเสียงค่อยๆ เบาลงและยุบกลับเข้าการ์ดเอง</span>

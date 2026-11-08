@@ -70,6 +70,8 @@ test("history: cards in a modal over the course, a picked card's video plays wit
   await expect(dock.getByTestId("history-video-name")).toHaveText(/^video\/\d{17}\.webm · 0:0[23]$/);
   await dock.getByRole("button", { name: "เล่น A photo finish" }).click();
   await expect(dock.getByTestId("history-playing")).toContainText("A photo finish");
+  // the overlay tells the dock how it goes
+  await expect(dock.getByTestId("history-screen")).toHaveText(/^จอ: เล่นอยู่ 0:0\d$/);
   const player = modal.getByTestId("history-player");
   await expect(player).toHaveAttribute("data-item", "hist-2");
   await expect(player.getByTestId("history-date")).toHaveText("2011.11.13");
@@ -85,6 +87,19 @@ test("history: cards in a modal over the course, a picked card's video plays wit
   await dock.getByTestId("history-open").click();
   await expect(modal).toHaveCount(0);
   await expect(live(overlay).getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 2500 });
+});
+
+test("history: a file the browser can't open gets a warning in the dock, and the dock says the screen can't play it", async ({ context }) => {
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("button", { name: "ตั้งสนาม 11R Sample Cup เป็น Active" }).click();
+  await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
+  await dock.locator("#sub-history").click();
+  await dock.getByRole("button", { name: "A photo finish", exact: true }).click();
+  await dock.getByTestId("history-video-file").setInputFiles(fixture("not-a-video.mp4"));
+  await expect(dock.getByTestId("history-video-warn")).toContainText("เปิดไฟล์ \"not-a-video.mp4\" ไม่ได้");
+  await dock.getByRole("button", { name: "เล่น A photo finish" }).click();
+  await expect(live(overlay).getByTestId("history-player")).toBeVisible({ timeout: 20_000 });
+  await expect(dock.getByTestId("history-screen")).toContainText("เปิดไฟล์วิดีโอนี้ไม่ได้", { timeout: 20_000 });
 });
 
 test("runner intro goes through the field in gate order; STARTING GATE lists every runner top to bottom", async ({ context }) => {

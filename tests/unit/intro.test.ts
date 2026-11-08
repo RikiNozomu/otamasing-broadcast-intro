@@ -5,6 +5,7 @@ import { sampleData } from "../../src/lib/sample";
 import { gridPage, introRunners, pedigreeLines, playingItem, postInstant, stallOf, weatherOfCode, fetchForecast } from "../../src/lib/intro";
 import { courseFacts, courseOf, cornersRun, heightAt, racePieces, startOf, VENUES } from "../../src/lib/venues";
 import { imageRefs, mapImageRefs, isImageName, videoName } from "../../src/lib/imageRefs";
+import { failureOf, videoStatusText } from "../../src/lib/videoStatus";
 
 const read = (p: string) => readFileSync(new URL(`../../${p}`, import.meta.url), "utf8");
 const r11 = () => sampleData().races.find((r) => r.id === "sample-11")!;
@@ -117,6 +118,27 @@ describe("history video", () => {
     const gone = mapImageRefs(d, () => null);
     expect(gone.races[1].intro.history.items[0].video).toBeNull();
     expect(gone.jockeys[0].photo).toBeNull();
+  });
+});
+
+describe("the screen's word on a history video", () => {
+  const play = { id: "h1", at: 1_000_000 };
+  it("sorts failures into files the browser can't open and the rest", () => {
+    expect(failureOf({ code: 4, message: "DEMUXER_ERROR_NO_SUPPORTED_STREAMS" })).toMatchObject({ state: "unsupported" });
+    expect(failureOf({ name: "NotSupportedError" }).state).toBe("unsupported");
+    expect(failureOf({ name: "NotAllowedError", message: "no gesture" })).toEqual({ state: "failed", detail: "NotAllowedError · no gesture" });
+    expect(failureOf(null).state).toBe("failed");
+  });
+  it("says what the overlay reported for this play, or that it hasn't answered", () => {
+    expect(videoStatusText(null, null)).toBeNull();
+    expect(videoStatusText(null, play, play.at + 1000)).toMatchObject({ bad: false });
+    // nothing from the screen after a few seconds, or only about an older play
+    expect(videoStatusText(null, play, play.at + 5000)).toMatchObject({ bad: true, text: expect.stringContaining("จอยังไม่ตอบ") });
+    expect(videoStatusText({ ...play, at: 1, state: "playing", t: 3 }, play, play.at + 5000)?.text).toContain("จอยังไม่ตอบ");
+    expect(videoStatusText({ ...play, state: "playing", t: 72.4 }, play)).toEqual({ text: "จอ: เล่นอยู่ 1:12", bad: false });
+    expect(videoStatusText({ ...play, state: "unsupported", t: 0, detail: "code 4" }, play)).toMatchObject({ bad: true, text: expect.stringContaining("HEVC") });
+    expect(videoStatusText({ ...play, state: "missing", t: 0 }, play)?.bad).toBe(true);
+    expect(videoStatusText({ ...play, state: "muted", t: 1 }, play)?.text).toContain("ไม่มีเสียง");
   });
 });
 
