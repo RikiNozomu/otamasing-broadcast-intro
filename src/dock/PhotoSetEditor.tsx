@@ -1,8 +1,8 @@
 /**
- * The left-hand pictures of one scene of a race (racecard or result): add several, remove, pick the one
- * on screen (or step with ◀ ▶), and the automatic slideshow (on/off, every x seconds).
+ * The pictures behind a race's STARTING GATE (the racecard's set in broadcast-compact's files): add several, remove,
+ * pick the one on screen (or step with ◀ ▶), and the automatic slideshow (on/off, every x seconds).
  */
-import { type PhotoSet, type PhotoView, type Race } from "../lib/model";
+import { type PhotoSet, type Race } from "../lib/model";
 import { useImage } from "../lib/images";
 import { dropUnused, storeImage } from "../lib/imageStore";
 import { setAuto, showPhoto, shownIndex, useShownIndex } from "../lib/photos";
@@ -13,9 +13,9 @@ import { inputClass } from "../components/Field";
 import { Section, hintClass } from "../components/Section";
 import { Switch } from "../components/Switch";
 
-const VIEW_LABEL: Record<PhotoView, string> = { card: "หน้าการ์ดรายชื่อ", result: "หน้าผล" };
+const view = "card";
 
-export function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
+function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: number | undefined; on: boolean; n: number; onShow: () => void; onRemove: () => void }) {
   const url = useImage(k, rev);
   return (
     <div className={cx("relative aspect-video border-2 bg-studio bg-cover bg-center", on ? "border-yellow" : "border-line")} style={{ backgroundImage: url ? `url("${url}")` : undefined }} data-thumb={n}>
@@ -27,7 +27,7 @@ export function Thumb({ k, rev, on, n, onShow, onRemove }: { k: string; rev: num
   );
 }
 
-export function PhotoSetEditor({ race, view }: { race: Race; view: PhotoView }) {
+export function PhotoSetEditor({ race }: { race: Race }) {
   const d = useData();
   const set = race.photos[view];
   const shown = useShownIndex(set);
@@ -63,7 +63,7 @@ export function PhotoSetEditor({ race, view }: { race: Race; view: PhotoView }) 
   };
 
   return (
-    <Section title={`รูปฉากหลัง (${VIEW_LABEL[view]})`}>
+    <Section title="รูปฉากหลัง STARTING GATE">
       {n > 0 && (
         <div className="grid grid-cols-4 gap-1" data-testid={`thumbs-${view}`}>
           {set.keys.map((k, i) => <Thumb key={k} k={k} rev={d.images[k]} n={i + 1} on={i === shown} onShow={() => save((s) => showPhoto(s, i))} onRemove={() => remove(k)} />)}

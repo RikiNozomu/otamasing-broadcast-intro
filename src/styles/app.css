@@ -35,3 +35,16 @@
   button:not(:disabled), label[for] { cursor: pointer; }
   :where(button, select, input, a, label):focus-visible { @apply outline-2 outline-offset-2 outline-yellow; }
 }
+
+/* Labels on the 3D course (three.js CSS2D objects, positioned by the renderer). */
+@layer components {
+  .course-label {
+    @apply flex items-center gap-2 px-4 py-1 font-display text-[26px] leading-tight font-bold tracking-[.08em] whitespace-nowrap uppercase shadow-[0_6px_18px_rgb(0_0_0/.45)];
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    transition: opacity .2s linear;
+  }
+  .course-label span { @apply font-semibold opacity-80; }
+  .course-label--start { @apply bg-yellow text-navy; }
+  .course-label--finish { @apply bg-white text-navy; }
+  .course-label--focus { @apply bg-[#38D4FF] text-navy; }
+}

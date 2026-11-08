@@ -16,6 +16,9 @@ export type ExportJob = { name: string; text: string; count: number };
 
 export function ExportPanel({ job, onClose }: { job: ExportJob; onClose: () => void }) {
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null);
+  // history videos can be large: the .zip may leave them out
+  const hasVideos = job.text.includes('"video/');
+  const [withVideos, setWithVideos] = useState(true);
   const obs = inObs();
   const save = async () => {
     const r = await saveJson(job.name, job.text);
@@ -25,7 +28,7 @@ export function ExportPanel({ job, onClose }: { job: ExportJob; onClose: () => v
   };
   const saveZip = async () => {
     const name = job.name.replace(/\.json$/i, "") + ".zip";
-    const z = await makeBundle(job.text);
+    const z = await makeBundle(job.text, withVideos);
     const r = await saveFile(name, z.blob, { description: "ZIP (JSON + รูป)", mime: "application/zip", ext: ".zip" });
     const lost = z.missing.length ? ` (ไม่พบรูปในเครื่องนี้ ${z.missing.length} รูป: ${z.missing.join(", ")})` : "";
     setMsg(r === "saved" ? { text: `บันทึก .zip พร้อมรูป ${z.images} รูปแล้ว${lost}`, bad: !!lost } : r === "cancelled" ? null
@@ -51,6 +54,12 @@ export function ExportPanel({ job, onClose }: { job: ExportJob; onClose: () => v
           <Button onClick={onClose}>ปิด</Button>
         </span>
       </span>
+      {!obs && hasVideos && (
+        <label className="flex items-center gap-2 text-xs">
+          <input type="checkbox" checked={withVideos} onChange={(e) => setWithVideos(e.target.checked)} data-testid="zip-videos" />
+          ใส่วิดีโอไฮไลต์ลงใน .zip ด้วย (ไฟล์จะใหญ่ขึ้น)
+        </label>
+      )}
       <textarea readOnly aria-label="ข้อความ JSON" data-testid="export-text" value={job.text} rows={5}
         className={cx(inputClass, "resize-y font-mono text-[11px] leading-snug")} onFocus={(e) => e.currentTarget.select()} />
       {msg && <span role={msg.bad ? "alert" : "status"} className={cx("text-xs", msg.bad ? "text-danger-ink" : "text-ok")}>{msg.text}</span>}

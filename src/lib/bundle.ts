@@ -12,11 +12,12 @@ export const BUNDLE_JSON = "data.json";
 export const isZip = (b: Uint8Array) => b.length > 3 && b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04;
 
 /** Pack the JSON text and every stored picture it names; `missing` lists names not stored in this browser. */
-export async function makeBundle(text: string): Promise<{ blob: Blob; images: number; missing: string[] }> {
+export async function makeBundle(text: string, withVideos = true): Promise<{ blob: Blob; images: number; missing: string[] }> {
   const files: Zippable = { [BUNDLE_JSON]: [strToU8(text), { level: 6 }] };
   const missing: string[] = [];
   let images = 0;
   for (const k of imageRefs(JSON.parse(text))) {
+    if (!withVideos && k.startsWith("video/")) continue;
     const b = await getImage(k).catch(() => undefined);
     if (!b) { missing.push(k); continue; }
     // pictures are compressed already: store them as they are
@@ -33,6 +34,6 @@ export function readBundle(bytes: Uint8Array): { ok: true; text: string; images:
   const json = files[BUNDLE_JSON] ? BUNDLE_JSON : Object.keys(files).find((k) => k.toLowerCase().endsWith(".json"));
   if (!json) return { ok: false, error: "ในไฟล์ .zip ไม่มีไฟล์ JSON" };
   const images: Record<string, Blob> = {};
-  for (const [k, v] of Object.entries(files)) if (k.startsWith("image/") && v.length) images[k] = new Blob([v], { type: mimeOf(k) });
+  for (const [k, v] of Object.entries(files)) if ((k.startsWith("image/") || k.startsWith("video/")) && v.length) images[k] = new Blob([v], { type: mimeOf(k) });
   return { ok: true, text: strFromU8(files[json]), images };
 }

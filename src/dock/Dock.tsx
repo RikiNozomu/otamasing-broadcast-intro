@@ -1,4 +1,4 @@
-/** The OBS Custom Browser Dock: three tabs, ภาพรวม (overview), การแข่งขัน (one race) and ม้า (horse profiles). */
+/** The OBS Custom Browser Dock: four tabs, ภาพรวม (overview), การแข่งขัน (one race and its intro scenes), ม้า (pedigrees and silks) and จ็อกกี้. */
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parseActive } from "../lib/model";
@@ -8,12 +8,14 @@ import { cx } from "../lib/cx";
 import { EditTab } from "./EditTab";
 import { RacesTab } from "./RacesTab";
 import { HorsesTab } from "./HorsesTab";
+import { JockeysTab } from "./JockeysTab";
+import { INTRO_LABEL } from "./intro/shared";
 
 export type Toast = (msg: string, bad?: boolean) => void;
 
 export function Dock() {
   const d = useData();
-  const [tab, setTab] = useState<"races" | "edit" | "horses">("races");
+  const [tab, setTab] = useState<"races" | "edit" | "horses" | "jockeys">("races");
   const [editing, setEditing] = useState<string | null>(parseActive(d.active).raceId ?? d.races[0]?.id ?? null);
   const [toastMsg, setToast] = useState<{ msg: string; bad: boolean } | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -22,21 +24,20 @@ export function Dock() {
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setToast(null), bad ? 6000 : 2500);
   }, []);
-  useEffect(() => { document.body.classList.add("bg-panel"); document.title = "โอตะม้าซิ่ง Broadcast Compact · Dock"; }, []);
+  useEffect(() => { document.body.classList.add("bg-panel"); document.title = "โอตะม้าซิ่ง Broadcast Intro · Dock"; }, []);
   // pictures saved before they were named image/<date-time>.<ext> get such a name
   useEffect(() => { renameOldImages().catch(() => {}); }, []);
   const a = parseActive(d.active);
   const race = d.races.find((r) => r.id === a.raceId);
-  const horse = a.view === "horse" ? d.horses.find((h) => h.id === a.horseId) : undefined;
-  const activeLabel = a.view === "blank" ? "หน้าเปล่า" : horse ? horse.name : !race ? "หน้าแรก" : `${race.round || race.name}${a.view === "result" ? " ผล" : ""}`;
-  const tabs = [["races", "ภาพรวม"], ["edit", "การแข่งขัน"], ["horses", "ม้า"]] as const;
+  const activeLabel = a.view === "blank" || !race ? "หน้าเปล่า" : `${race.round || race.name} ${INTRO_LABEL[a.view]}`;
+  const tabs = [["races", "ภาพรวม"], ["edit", "การแข่งขัน"], ["horses", "ม้า"], ["jockeys", "จ็อกกี้"]] as const;
   return (
     <div className="grid min-h-screen grid-rows-[auto_auto_1fr] bg-panel">
       <div className="flex items-center justify-between bg-navy px-3.5 py-2.5 font-display text-[15px] font-bold tracking-[.06em] uppercase">
-        <span>โอตะม้าซิ่ง Broadcast Compact</span>
+        <span>โอตะม้าซิ่ง Broadcast Intro</span>
         <span data-testid="active-tag">Active: {activeLabel}</span>
       </div>
-      <div className="grid grid-cols-3 border-b border-line" role="tablist">
+      <div className="grid grid-cols-4 border-b border-line" role="tablist">
         {tabs.map(([k, label]) => (
           <button key={k} type="button" role="tab" id={`tab-${k}`} aria-selected={tab === k} aria-controls={`p-${k}`} onClick={() => setTab(k)}
             className={cx("relative px-1 py-2.5 text-sm font-medium", tab === k ? "text-ink" : "text-ink-muted")}>
@@ -48,7 +49,8 @@ export function Dock() {
       {tab === "races"
         ? <RacesTab toast={toast} onEdit={(id) => { setEditing(id); setTab("edit"); }} />
         : tab === "edit" ? <EditTab editing={editing} setEditing={setEditing} />
-        : <HorsesTab />}
+        : tab === "horses" ? <HorsesTab />
+        : <JockeysTab />}
       <AnimatePresence>
         {toastMsg && (
           <motion.div key="toast" role={toastMsg.bad ? "alert" : "status"}

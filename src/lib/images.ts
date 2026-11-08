@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from "react";
 
-const DB = "otamasing-broadcast-compact", STORE = "images";
+const DB = "otamasing-broadcast-intro", STORE = "images";
 
 function open(): Promise<IDBDatabase> {
   return new Promise((res, rej) => {
@@ -34,6 +34,8 @@ export async function imageOk(key: string): Promise<boolean> {
   let b: Blob | undefined;
   try { b = await getImage(key); } catch { return false; }
   if (!b || !b.size) return false;
+  // videos are only checked for being there (decoding one just to check is slow)
+  if (key.startsWith("video/")) return true;
   const url = URL.createObjectURL(b);
   try {
     return await new Promise<boolean>((res) => {

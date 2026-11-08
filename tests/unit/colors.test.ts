@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bracket, boxColors, JRA, US } from "../../src/lib/colors";
-import { gradeLabel, ordinal } from "../../src/lib/labels";
+import { gradeLabel } from "../../src/lib/labels";
 import { newStyle } from "../../src/lib/model";
 
 const sizes = (n: number) => {
@@ -51,5 +51,4 @@ describe("labels", () => {
     expect(gradeLabel({ grade: "G2", jump: false }, { gradeStyle: "intl" })).toBe("G2");
     expect(gradeLabel({ grade: null, jump: false }, { gradeStyle: "jra" })).toBe("");
   });
-  it("ordinals", () => expect([1, 2, 3, 4, 11, 12, 13, 21, 22].map(ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd"]));
 });

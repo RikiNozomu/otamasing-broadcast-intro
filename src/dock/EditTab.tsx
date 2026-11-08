@@ -1,47 +1,42 @@
-/** Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its result (ผล) or its own style (สไตล์). A scene that is not on screen shows a preview. */
+/**
+ * Tab "การแข่งขัน": pick any race, edit its data (ข้อมูล), its own style (สไตล์), and its intro scenes
+ * (สนาม, ประวัติ, แนะนำตัว, Starting Gate).
+ */
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { CLASSES, exportFile, parseActive, resultOf, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type RaceClass, type Runner, type Scheme, type Style } from "../lib/model";
+import { exportFile, parseActive, GRADES, MAX_RUNNERS, MIN_RUNNERS, SURFACES, type Grade, type Race, type Runner, type Scheme, type Style } from "../lib/model";
 import { customPair, US } from "../lib/colors";
 import { ExportPanel } from "./ExportPanel";
 import { cx } from "../lib/cx";
-import { update, updateRace, useData } from "../lib/store";
-import { RacecardScene } from "../overlay/RacecardScene";
-import { ResultScene } from "../overlay/ResultScene";
-import { ResultPanel } from "./ResultPanel";
+import { updateRace, useData } from "../lib/store";
 import { PhotoSetEditor } from "./PhotoSetEditor";
-import { Stage } from "../overlay/Stage";
 import { Button } from "../components/Button";
 import { Field, inputClass } from "../components/Field";
 import { Section, hintClass } from "../components/Section";
 import { Switch } from "../components/Switch";
 import { FlagPicker } from "./FlagPicker";
-import { CardPagesSection } from "./CardPagesSection";
-import { pageOfHorse, showCardPage } from "../lib/cardPages";
+import { CoursePanel } from "./intro/CoursePanel";
+import { HistoryPanel } from "./intro/HistoryPanel";
+import { RunnerPanel } from "./intro/RunnerPanel";
+import { GatePanel } from "./intro/GatePanel";
+
+type Sub = "data" | "style" | "course" | "history" | "runner" | "grid";
+const INTRO_SUBS: Sub[] = ["course", "history", "runner", "grid"];
 
 const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
 const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า" };
-const CLASS_LABEL: Record<RaceClass, string> = { "2YO": "2YO", "2YO_F": "2YO (ตัวเมีย)", "3YO": "3YO", FM: "F&M" };
 
 export function EditTab({ editing, setEditing }: { editing: string | null; setEditing: (id: string) => void }) {
   const d = useData();
-  const [sub, setSub] = useState<"data" | "result" | "style">("data");
+  const [sub, setSub] = useState<Sub>("data");
   /** The race whose export panel is open. */
   const [exporting, setExporting] = useState<string | null>(null);
   const race = d.races.find((r) => r.id === editing) ?? d.races[0];
   if (!race) return <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-edit"><p className={hintClass}>ยังไม่มีรายการแข่งขัน เพิ่มหรือนำเข้าได้ที่แท็บภาพรวม</p></div>;
-  const a = parseActive(d.active);
-  // which scene of this race the open sub-tab is about, and whether that scene is on screen
-  const view = sub === "result" ? "result" : "card";
-  const isAct = a.raceId === race.id && a.view === view;
   const set = (patch: Partial<Race>) => updateRace(race.id, (r) => ({ ...r, ...patch }));
   const setStyle = (fn: (s: Style) => Style) => updateRace(race.id, (r) => ({ ...r, style: fn(r.style) }));
   const setRunner = (i: number, patch: Partial<Runner>) =>
-    updateRace(race.id, (r) => {
-      const runners = r.runners.map((h, j) => (j === i ? { ...h, ...patch } : h));
-      const h = runners[i];
-      return { ...r, runners, highlight: h.scratched && r.highlight === h.number ? null : r.highlight };
-    });
+    updateRace(race.id, (r) => ({ ...r, runners: r.runners.map((h, j) => (j === i ? { ...h, ...patch } : h)) }));
   const S = race.style;
   const n = race.runners.length;
   const showCustom = S.drawScheme === "custom" || S.numberScheme === "custom";
@@ -58,7 +53,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
     </Field>
   );
   const runnerGrid = "grid grid-cols-[30px_minmax(0,1fr)_46px_44px_22px] items-center gap-1 text-xs";
-  const subtabs = [["data", "ข้อมูล"], ["result", "ผล"], ["style", "สไตล์"]] as const;
+  const subtabs = [["data", "ข้อมูล"], ["style", "สไตล์"], ["course", "สนาม"], ["history", "ประวัติ"], ["runner", "แนะนำตัว"], ["grid", "Starting Gate"]] as const;
 
   return (
     <div className="grid content-start gap-3 p-3" role="tabpanel" id="p-edit" aria-labelledby="tab-edit">
@@ -74,9 +69,8 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
         })}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
-        <span>{isAct ? `${view === "result" ? "หน้าผล" : "การ์ด"}ของรายการนี้ Active อยู่ แก้แล้วขึ้นจอทันที` : `${view === "result" ? "หน้าผล" : "การ์ด"}นี้ไม่ได้ Active แก้ได้ แต่ยังไม่ขึ้นจอ (ดูพรีวิวด้านล่าง)`}</span>
+        <span>{INTRO_SUBS.includes(sub) ? "ฉาก intro ของรายการนี้ (สนาม 3D, แนะนำตัว, Starting Gate)" : "ข้อมูลที่ทุกฉากใช้ แก้แล้วขึ้นจอทันทีถ้าฉากของรายการนี้ Active อยู่"}</span>
         <span className="flex flex-wrap gap-1.5">
-          {!isAct && <Button variant="primary" onClick={() => update((x) => ({ ...x, active: view === "result" ? resultOf(race.id) : race.id }))}>{view === "result" ? "ตั้งหน้าผลเป็น Active" : "ตั้งเป็น Active"}</Button>}
           <Button aria-expanded={exporting === race.id} onClick={() => setExporting((x) => (x === race.id ? null : race.id))}>ส่งออกรายการนี้</Button>
         </span>
       </div>
@@ -86,7 +80,6 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             job={{ name: `${race.date.replaceAll("-", "")}-${(race.round || race.name).replace(/\W+/g, "")}.json`, text: JSON.stringify(exportFile(d, race.id), null, 2), count: 1 }} />
         )}
       </AnimatePresence>
-      {!isAct && <div className="relative aspect-video overflow-hidden border border-line" data-testid="preview"><Stage className="pointer-events-none">{view === "result" ? <ResultScene race={race} /> : <RacecardScene race={race} />}</Stage></div>}
 
       <div className="grid grid-cols-3 border border-line" role="tablist" aria-label="ส่วนที่แก้ไข">
         {subtabs.map(([k, label]) => (
@@ -98,9 +91,12 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
         ))}
       </div>
 
-      {sub === "data" ? (
+      {sub === "course" ? <CoursePanel race={race} />
+      : sub === "history" ? <HistoryPanel race={race} />
+      : sub === "runner" ? <RunnerPanel race={race} />
+      : sub === "grid" ? <><GatePanel race={race} /><PhotoSetEditor race={race} /></>
+      : sub === "data" ? (
         <div className="grid gap-3" role="tabpanel" aria-labelledby="sub-data">
-          <PhotoSetEditor race={race} view="card" />
           <Section title="ข้อมูลรายการ">
             {text("name", "ชื่อรายการ")}
             {text("date", "วันที่", { type: "date" })}
@@ -113,32 +109,16 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             </Field>
             {select("f-grade", "เกรด", race.grade ?? "", (v) => set({ grade: (v || null) as Grade | null }), [["", "ไม่มี"], ...GRADES.map((g): [string, string] => [g, g === "L" ? "Listed" : g])])}
             <Switch on={race.jump} label="Jump race (ขึ้น J- หน้าเกรด)" onToggle={() => set({ jump: !race.jump })} />
-            {select("f-class", "Class", race.class ?? "", (v) => set({ class: (v || null) as RaceClass | null }), [["", "ไม่มี"], ...(Object.keys(CLASSES) as RaceClass[]).map((c): [string, string] => [c, CLASS_LABEL[c]])])}
-          </Section>
-          <CardPagesSection race={race} />
-          <Section title="ไฮไลต์ม้าบนจอ (กดซ้ำเพื่อเอาออก)">
-            <div className="grid grid-cols-8 gap-1">
-              {race.runners.map((h) => {
-                const on = race.highlight === h.number;
-                return (
-                  <button key={h.number} type="button" data-h={h.number} aria-pressed={on} disabled={h.scratched}
-                    className={cx("border-2 py-[3px] font-display text-[17px] font-bold disabled:opacity-35", on ? "border-yellow bg-yellow text-navy" : "border-white bg-navy text-white")}
-                    onClick={() => updateRace(race.id, (r) => ({ ...r, highlight: on ? null : h.number,
-                      // turn the racecard to the page with the highlighted horse
-                      card: on ? r.card : showCardPage(r, pageOfHorse(r, h.number)) }))}>{h.number}</button>
-                );
-              })}
-            </div>
           </Section>
           <Section title={`ม้า ${n} ตัว (รองรับ ${MIN_RUNNERS}–${MAX_RUNNERS})`}>
-            <div className={cx(runnerGrid, "text-[11px] text-ink-muted")} aria-hidden="true"><span>No</span><span>ชื่อม้า / จ็อกกี้</span><span>ธง</span><span>Fav</span><span>ถอน</span></div>
+            <div className={cx(runnerGrid, "text-[11px] text-ink-muted")} aria-hidden="true"><span>No</span><span>ชื่อม้า / จ็อกกี้</span><span>ธง</span><span /><span>ถอน</span></div>
             <div className="grid gap-1.5" data-testid="runner-rows">
               {race.runners.map((h, i) => (
                 <div className={cx(runnerGrid, "border-b border-line pb-1.5")} key={h.number}>
                   <span className="bg-navy py-[3px] text-center font-display text-[15px] font-bold">{h.number}</span>
                   <input className={inputClass} aria-label={`ชื่อม้าเบอร์ ${h.number}`} value={h.name} onChange={(e) => setRunner(i, { name: e.target.value })} />
                   <FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} onChange={(c) => setRunner(i, { horseCountry: c })} />
-                  <input className={inputClass} type="number" min={1} max={MAX_RUNNERS} aria-label={`อันดับตัวเต็งเบอร์ ${h.number}`} value={h.fav ?? ""} onChange={(e) => setRunner(i, { fav: e.target.value ? Math.max(1, Math.round(+e.target.value)) : null })} />
+                  <span />
                   <input type="checkbox" className="justify-self-center" aria-label={`ถอนเบอร์ ${h.number}`} checked={h.scratched} onChange={(e) => setRunner(i, { scratched: e.target.checked })} />
                   {S.autoDraw ? <span /> : <input className={cx(inputClass, "px-0.5 text-center")} type="number" min={1} max={MAX_RUNNERS} aria-label={`ซองเบอร์ ${h.number}`} title="ซอง" placeholder="ซอง" value={h.draw ?? ""} onChange={(e) => setRunner(i, { draw: e.target.value ? Math.round(+e.target.value) : null })} />}
                   <input className={inputClass} aria-label={`จ็อกกี้เบอร์ ${h.number}`} placeholder="จ็อกกี้" value={h.jockey} onChange={(e) => setRunner(i, { jockey: e.target.value })} />
@@ -155,14 +135,9 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
             </div>
             <div className="flex flex-wrap gap-1.5">
               <Button disabled={n >= MAX_RUNNERS} onClick={() => updateRace(race.id, (r) => ({ ...r, runners: [...r.runners, { number: Math.max(...r.runners.map((x) => x.number)) + 1, draw: null, name: "", jockey: "", horseCountry: "", jockeyCountry: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null, scratched: false, finish: null, outcome: null, time: "", margin: "" }] }))}>+ เพิ่มม้า</Button>
-              <Button disabled={n <= MIN_RUNNERS} onClick={() => updateRace(race.id, (r) => { const runners = r.runners.slice(0, -1); return { ...r, runners, highlight: runners.some((x) => x.number === r.highlight) ? r.highlight : null }; })}>− ลบตัวท้าย</Button>
+              <Button disabled={n <= MIN_RUNNERS} onClick={() => updateRace(race.id, (r) => ({ ...r, runners: r.runners.slice(0, -1) }))}>− ลบตัวท้าย</Button>
             </div>
           </Section>
-        </div>
-      ) : sub === "result" ? (
-        <div className="grid gap-3">
-          <PhotoSetEditor race={race} view="result" />
-          <ResultPanel race={race} />
         </div>
       ) : (
         <div className="grid gap-3" role="tabpanel" aria-labelledby="sub-style">
@@ -204,8 +179,8 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
               <option value="intl">สากล (G1 / G2 / G3 / L)</option>
             </select>
           </Section>
-          <Section title="แสดงบนการ์ด">
-            {([["draw", "ช่อง DRAW (ซอง)"], ["grade", "ป้ายเกรด"], ["class", "ป้าย Class"], ["fav", "ป้าย Fav (อันดับตัวเต็ง)"], ["horseFlag", "ธงชาติม้า"], ["jockeyFlag", "ธงชาติจ็อกกี้"], ["horseWeight", "น้ำหนักตัวม้า"], ["weight", "น้ำหนักจ็อกกี้ (ที่ม้าแบก)"]] as const).map(([k, label]) => (
+          <Section title="แสดงบนจอ">
+            {([["grade", "ป้ายเกรด"], ["horseFlag", "ธงชาติม้า"], ["jockeyFlag", "ธงชาติจ็อกกี้"]] as const).map(([k, label]) => (
               <Switch key={k} on={S.show[k]} label={label} testId={`show-${k}`} onToggle={() => setStyle((s) => ({ ...s, show: { ...s.show, [k]: !s.show[k] } }))} />
             ))}
           </Section>

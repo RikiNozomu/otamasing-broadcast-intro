@@ -1,8 +1,5 @@
 /** Splitting a list into pages for the screen. */
 
-/** Races per page on the home scene: 8 rows of 78px fit between the title and the bottom edge at full size. */
-export const HOME_ROWS = 8;
-
 export interface Paged<T> { rows: T[]; page: number; pageCount: number }
 
 /** Page `page` (0-based, clamped) of `items`, `per` at a time. */
