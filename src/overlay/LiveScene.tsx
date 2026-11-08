@@ -3,10 +3,6 @@ import { animate, motion, useMotionValue, useTransform, type TargetAndTransition
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { BLANK, parseActive, type Transition } from "../lib/model";
 import { useData } from "../lib/store";
-import { RacecardScene } from "./RacecardScene";
-import { RaceListScene } from "./RaceListScene";
-import { ResultScene } from "./ResultScene";
-import { HorseScene } from "./HorseScene";
 import { LeavingContext } from "./leaving";
 // the course scene brings three.js: its own chunk, loaded as soon as the overlay starts (see Overlay)
 export const loadCourseScene = () => import("./intro/CourseScene");
@@ -14,21 +10,14 @@ const CourseScene = lazy(() => loadCourseScene().then((m) => ({ default: m.Cours
 import { RunnerScene } from "./intro/RunnerScene";
 import { GridScene } from "./intro/GridScene";
 
-/** What one Active value draws. A deleted race or horse falls back to the home page. */
+/** What one Active value draws: one of a race's intro scenes, or nothing (also for a race that was deleted). */
 export function Scene({ id }: { id: string }) {
   const d = useData();
   const a = parseActive(id);
-  if (a.view === "blank") return <div className="absolute inset-0" data-testid="blank" />;
-  if (a.view === "horse") {
-    const horse = d.horses.find((h) => h.id === a.horseId);
-    return horse ? <HorseScene horse={horse} /> : <RaceListScene />;
-  }
-  const race = a.view === "home" ? undefined : d.races.find((r) => r.id === a.raceId);
-  if (!race) return <RaceListScene />;
+  const race = a.view === "blank" ? undefined : d.races.find((r) => r.id === a.raceId);
+  if (!race) return <div className="absolute inset-0" data-testid="blank" />;
   if (a.view === "course") return <Suspense fallback={null}><CourseScene race={race} /></Suspense>;
-  if (a.view === "runner") return <RunnerScene race={race} />;
-  if (a.view === "grid") return <GridScene race={race} />;
-  return a.view === "result" ? <ResultScene race={race} /> : <RacecardScene race={race} />;
+  return a.view === "runner" ? <RunnerScene race={race} /> : <GridScene race={race} />;
 }
 
 const WIPE_EASE = [0.7, 0, 0.25, 1] as const;

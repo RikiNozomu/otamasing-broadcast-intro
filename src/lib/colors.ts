@@ -55,4 +55,3 @@ export function boxColors(scheme: Scheme, value: number, horseNo: number, n: num
 export const drawOf = (s: Style, number: number, draw: number | null, n: number) => (s.autoDraw ? bracket(number, n) : draw ?? number);
 
 export const GRADE_COLOR: Record<string, string> = { G1: "#E23B24", G2: "#0E1478", G3: "#4DB437", L: "#F2BD34" };
-export const favColor = (n: number) => (n === 1 ? "#F2BE34" : n === 2 ? "#7EA3C6" : n === 3 ? "#C0907E" : "#BDBDBD");

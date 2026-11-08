@@ -13,7 +13,7 @@ export function Landing() {
     <main className="mx-auto grid max-w-[1100px] gap-5 px-4 pt-8 pb-14">
       <header>
         <h1 className="m-0 mb-2 font-display text-[44px] leading-none font-extrabold uppercase">โอตะม้าซิ่ง Broadcast Intro</h1>
-        <p className="m-0 max-w-[70ch] text-ink-muted">แผงควบคุมใน OBS (Custom Browser Dock) กับหน้าจอออกอากาศ (Browser Source) สำหรับฉาก Intro ก่อนการแข่งขันแบบ F1: สนาม 3D และประวัติรายการ, แนะนำม้าทีละตัว, STARTING GATE (และการ์ดรายชื่อม้า ผล หน้าแรก แบบ broadcast compact) ข้อมูลเก็บในเบราว์เซอร์ของเครื่องนี้เท่านั้น</p>
+        <p className="m-0 max-w-[70ch] text-ink-muted">แผงควบคุมใน OBS (Custom Browser Dock) กับหน้าจอออกอากาศ (Browser Source) สำหรับฉาก Intro ก่อนการแข่งขันแบบ F1: สนาม 3D และประวัติรายการ, แนะนำม้าทีละตัว และ STARTING GATE (การ์ดรายชื่อม้า ผล และหน้าแรกอยู่ใน broadcast compact ไฟล์ JSON ใช้ร่วมกันได้) ข้อมูลเก็บในเบราว์เซอร์ของเครื่องนี้เท่านั้น</p>
       </header>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-3">
         {links.map(([title, where, hash]) => (

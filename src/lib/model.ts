@@ -79,7 +79,7 @@ export const StyleSchema = z.object({
 });
 export type Style = z.infer<typeof StyleSchema>;
 
-/** How the result page is shown: which page of finishers, and the horses (by number) locked at the top of every page. */
+/** broadcast compact's result page (not shown here, kept for compact): which page of finishers, and the horses (by number) locked at the top of every page. */
 /**
  * How the result page is shown: `page` is the page on screen at time `since`; with `auto` the pages
  * take turns every `seconds` from there (like the picture slideshow). Locked horses stay on every page.
@@ -95,7 +95,7 @@ export type ResultView = z.infer<typeof ResultViewSchema>;
 export const newResult = (): ResultView => ResultViewSchema.parse({});
 
 /**
- * How the racecard pages: at most 10 horses a page, `page` on screen at time `since`; with `auto`
+ * How broadcast compact's racecard pages (kept for compact): at most 10 horses a page, `page` on screen at time `since`; with `auto`
  * the pages take turns every `seconds` (like the result page).
  */
 export const CardViewSchema = z.object({
@@ -140,7 +140,7 @@ export const RaceSchema = z
     highlight: z.number().int().nullable().default(null),
     style: StyleSchema.default({}),
     result: ResultViewSchema.default({}),
-    /** Racecard paging (10 horses a page). */
+    /** broadcast compact's racecard paging (10 horses a page), kept for compact. */
     card: CardViewSchema.default({}),
     /** Pictures live in the browser; the file holds their names (image/<date-time>.<ext>), order and slideshow settings. */
     photos: z.object({ card: PhotoSetSchema.default({}), result: PhotoSetSchema.default({}) }).default({}),
@@ -162,7 +162,7 @@ export const HomeSchema = z.object({
   title: z.string().default("Today's Races"),
   subtitle: z.string().default(""),
   highlight: z.string().nullable().default(null),
-  /** Page of the race list on screen (0-based), HOME_ROWS races a page. */
+  /** Page of broadcast compact's race list on screen (0-based), 8 races a page. */
   page: z.number().int().min(0).default(0),
   /** Name of the background picture stored in the browser (image/<date-time>.<ext>), or none. */
   background: z.string().nullable().default(null),
@@ -195,46 +195,34 @@ export interface AppData {
   horses: Horse[];
   horseSettings: HorseSettings;
   jockeys: Jockey[];
-  /**
-   * "home" (the race list page), "blank" (nothing), a race id (its racecard), `<race id>:result` (its result page),
-   * `horse:<id>`, or a race's intro scenes: `course:<race id>`, `runner:<race id>`, `grid:<race id>`.
-   */
+  /** "blank" (nothing on screen) or a race's intro scene: `course:<race id>`, `runner:<race id>`, `grid:<race id>`. */
   active: string;
   transition: Transition;
+  /** The race list page of broadcast-compact: not shown here, kept so a file goes back to compact unchanged. */
   home: Home;
   /** Bumped when a picture changes in IndexedDB, so other pages reload it. Key: "race:<id>" or "home". */
   images: Record<string, number>;
 }
 
-export const HOME = "home";
 /** Active value for an empty (transparent) screen. */
 export const BLANK = "blank";
-const RESULT = ":result";
-const HORSE = "horse:";
-/** The Active value that shows a horse's profile. */
-export const horseOf = (horseId: string) => HORSE + horseId;
-/** The Active value that shows a race's result page. */
-export const resultOf = (raceId: string) => raceId + RESULT;
-/** The race intro scenes: the course (globe, 3D track, history), one runner at a time, the starting grid. */
+/** The race intro scenes: the course (globe, 3D track, history), one runner at a time, the starting gate. */
 export const INTRO_VIEWS = ["course", "runner", "grid"] as const;
 export type IntroView = (typeof INTRO_VIEWS)[number];
 /** The Active value that shows one of a race's intro scenes. */
 export const introOf = (view: IntroView, raceId: string) => `${view}:${raceId}`;
-/** What an Active value points at. */
-export function parseActive(active: string):
-  | { view: "home" | "blank"; raceId?: undefined; horseId?: undefined }
-  | { view: "card" | "result" | IntroView; raceId: string; horseId?: undefined }
-  | { view: "horse"; raceId?: undefined; horseId: string } {
-  if (active === HOME || active === BLANK) return { view: active };
-  if (active.startsWith(HORSE)) return { view: "horse", horseId: active.slice(HORSE.length) };
+/**
+ * What an Active value points at. Anything else (the racecard, result, home and horse pages of broadcast-compact,
+ * whose values can come in with a file) is the blank screen.
+ */
+export function parseActive(active: string): { view: "blank"; raceId?: undefined } | { view: IntroView; raceId: string } {
   for (const v of INTRO_VIEWS) if (active.startsWith(v + ":")) return { view: v, raceId: active.slice(v.length + 1) };
-  return active.endsWith(RESULT) ? { view: "result", raceId: active.slice(0, -RESULT.length) } : { view: "card", raceId: active };
+  return { view: "blank" };
 }
-/** An Active value is valid when it is home or blank, or points at a race or a horse in the lists. */
-export function activeExists(active: string, races: Pick<Race, "id">[], horses: Pick<Horse, "id">[] = []): boolean {
+/** An Active value is valid when it is blank or points at a race in the list. */
+export function activeExists(active: string, races: Pick<Race, "id">[]): boolean {
   const a = parseActive(active);
-  if (a.view === "horse") return horses.some((h) => h.id === a.horseId);
-  return a.view === "home" || a.view === "blank" || races.some((r) => r.id === a.raceId);
+  return a.view === "blank" || races.some((r) => r.id === a.raceId);
 }
 
 export const newStyle = (): Style => StyleSchema.parse({});
@@ -279,10 +267,10 @@ export function parseFile(text: string): ParseResult {
  * "append": add, replacing races with the same date+course+round (keeping their id, so Active stays).
  * "replace": what the file holds becomes the whole list (its races replace all races, its horses all horses;
  * a file without races keeps the races, one without horses keeps the horses).
- * Either way the screen goes to the home page afterwards, unless the blank page was on (it stays blank).
+ * Either way the screen goes blank afterwards.
  */
 export function mergeImport(cur: AppData, file: z.output<typeof FileSchema>, mode: "append" | "replace"): AppData {
-  const active = cur.active === BLANK ? BLANK : HOME;
+  const active = BLANK;
   const incoming: Race[] = file.races.map(withIds);
   const incomingHorses: Horse[] = file.horses.map((h) => ({ ...h, id: h.id ?? newId() }));
   const incomingJockeys: Jockey[] = file.jockeys.map((j) => ({ ...j, id: j.id ?? newId() }));

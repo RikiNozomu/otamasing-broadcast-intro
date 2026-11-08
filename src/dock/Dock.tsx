@@ -1,7 +1,7 @@
-/** The OBS Custom Browser Dock: four tabs, ภาพรวม (overview), การแข่งขัน (one race and its intro scenes), ม้า (horse profiles) and จ็อกกี้. */
+/** The OBS Custom Browser Dock: four tabs, ภาพรวม (overview), การแข่งขัน (one race and its intro scenes), ม้า (pedigrees and silks) and จ็อกกี้. */
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { INTRO_VIEWS, parseActive } from "../lib/model";
+import { parseActive } from "../lib/model";
 import { useData } from "../lib/store";
 import { renameOldImages } from "../lib/imageStore";
 import { cx } from "../lib/cx";
@@ -29,8 +29,7 @@ export function Dock() {
   useEffect(() => { renameOldImages().catch(() => {}); }, []);
   const a = parseActive(d.active);
   const race = d.races.find((r) => r.id === a.raceId);
-  const horse = a.view === "horse" ? d.horses.find((h) => h.id === a.horseId) : undefined;
-  const activeLabel = a.view === "blank" ? "หน้าเปล่า" : horse ? horse.name : !race ? "หน้าแรก" : `${race.round || race.name}${a.view === "result" ? " ผล" : (INTRO_VIEWS as readonly string[]).includes(a.view) ? ` ${INTRO_LABEL[a.view as keyof typeof INTRO_LABEL]}` : ""}`;
+  const activeLabel = a.view === "blank" || !race ? "หน้าเปล่า" : `${race.round || race.name} ${INTRO_LABEL[a.view]}`;
   const tabs = [["races", "ภาพรวม"], ["edit", "การแข่งขัน"], ["horses", "ม้า"], ["jockeys", "จ็อกกี้"]] as const;
   return (
     <div className="grid min-h-screen grid-rows-[auto_auto_1fr] bg-panel">

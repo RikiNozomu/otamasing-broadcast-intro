@@ -94,7 +94,7 @@ export const HorsePhotosSchema = z.object({
 export const SILKS_MODES = ["upload", "pattern", "none"] as const;
 export type SilksMode = (typeof SILKS_MODES)[number];
 
-/** Which page of the horse scene is on screen; the pages take turns with `auto` like the racecard. */
+/** Which page of broadcast compact's horse scene is on screen (kept for compact); the pages take turns with `auto` like the racecard. */
 export const HorseViewSchema = z.object({
   page: z.number().int().min(0).default(0),
   auto: z.boolean().default(false),
