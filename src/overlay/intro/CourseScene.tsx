@@ -78,7 +78,7 @@ function Panels({ race, venue, track, delay }: { race: Race; venue: Venue; track
       </div>
       <div className="mt-3 grid grid-cols-4 gap-4">
         <Fact label="CORNERS" value={facts.corners} testId="fact-corners" />
-        <Fact label="HILL" value={<>{facts.height}<span className="text-[20px]"> M</span></>} testId="fact-hill" />
+        <Fact label="HILL" value={facts.height ? <>{facts.height}<span className="text-[20px]"> M</span></> : "FLAT"} testId="fact-hill" />
         <Fact label="BACK STR." value={facts.back != null ? <>{facts.back}<span className="text-[20px]"> M</span></> : "–"} testId="fact-back" />
         <Fact label="HOME STR." value={<>{facts.home}<span className="text-[20px]"> M</span></>} testId="fact-home" />
       </div>

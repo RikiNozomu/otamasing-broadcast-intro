@@ -351,3 +351,28 @@ test("stripes: the old scene plays its exit, then slanted bands sweep the new on
   expect(seen).toContain("2+stripes");
   expect(seen.indexOf("2+stripes")).toBeLessThan(seen.lastIndexOf("1"));
 });
+
+test("course scene: every Japanese G1 / JpnI course is there, picked from the race's course name or by hand", async ({ context }) => {
+  test.slow();
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("button", { name: "ตั้งสนาม 12R Sample Juvenile เป็น Active" }).click();
+  await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
+  await dock.locator("[data-e=sample-12]").click();
+  await dock.locator("#sub-course").click();
+  await dock.getByTestId("course-globe").click();
+  // "Tokyo" turf 1600: the mile starts up the chute on the back straight, so only two corners
+  await expect(dock.getByTestId("course-found")).toContainText("Tokyo Racecourse");
+  await expect(dock.getByTestId("course-found")).toContainText("ผ่าน 2 โค้ง");
+  const scene = live(overlay).getByTestId("course-scene");
+  await expect(scene.getByTestId("venue-name")).toHaveText(/Tokyo Racecourse/i, { timeout: 20_000 });
+  await expect(scene.getByTestId("direction")).toHaveText(/left-handed/i);
+  // picked by hand: Ohi, a flat dirt track, right-handed
+  await dock.locator("#c-venue").selectOption("ohi");
+  await expect(dock.getByTestId("course-found")).toContainText("Ohi Racecourse");
+  await expect(scene.getByTestId("venue-name")).toHaveText(/Ohi Racecourse/i);
+  await expect(scene.getByTestId("direction")).toHaveText(/right-handed/i);
+  await expect(scene.getByTestId("fact-hill")).toContainText("FLAT");
+  // every venue is in the list
+  for (const name of ["Chukyo", "Funabashi", "Hanshin", "Kanazawa", "Kawasaki", "Kyoto", "Morioka", "Nakayama", "Ohi", "Tokyo", "Urawa"])
+    await expect(dock.locator("#c-venue option", { hasText: `${name} Racecourse` })).toHaveCount(1);
+});
