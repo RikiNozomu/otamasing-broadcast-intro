@@ -89,6 +89,47 @@ test("history: cards in a modal over the course, a picked card's video plays wit
   await expect(live(overlay).getByTestId("panel-venue")).toHaveCSS("opacity", "1", { timeout: 2500 });
 });
 
+test("course scene: the race's path draws itself from the start to the post, slow-fast-slow; switched off it is wiped away from the start", async ({ context }) => {
+  test.slow();
+  const { dock, overlay } = await open(context);
+  await dock.getByRole("button", { name: "ตั้งสนาม 11R Sample Cup เป็น Active" }).click();
+  const view = live(overlay).getByTestId("course-scene").getByTestId("course-3d");
+  // the visible part of the path as fractions from the start: "tail-head"
+  await expect(view).toHaveAttribute("data-path-shown", "0.00-1.00", { timeout: 60_000 });
+  const record = () => view.evaluate((el) => {
+    const w = window as unknown as { shown: [number, number, number][] };
+    w.shown = [];
+    new MutationObserver(() => {
+      const [a, b] = el.dataset.pathShown!.split("-").map(Number);
+      w.shown.push([performance.now(), a, b]);
+    }).observe(el, { attributes: true, attributeFilter: ["data-path-shown"] });
+  });
+  const recorded = () => overlay.evaluate(() => (window as unknown as { shown: [number, number, number][] }).shown);
+  await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
+  await dock.locator("#sub-course").click();
+
+  // off: the start end runs up to the post and the line is gone, nothing fades
+  await record();
+  await dock.getByTestId("course-path").click();
+  await expect(view).toHaveAttribute("data-path-shown", "1.00-1.00", { timeout: 10_000 });
+  const off = await recorded();
+  expect(off.every(([, , head]) => head === 1)).toBe(true);
+  expect(off.some(([, tail]) => tail > 0.1 && tail < 0.9)).toBe(true);
+  expect(off.every(([, tail], i) => i === 0 || tail >= off[i - 1][1])).toBe(true);
+
+  // on: drawn again from the start to the post
+  await record();
+  await dock.getByTestId("course-path").click();
+  await expect(view).toHaveAttribute("data-path-shown", "0.00-1.00", { timeout: 10_000 });
+  const on = await recorded();
+  expect(on.every(([, tail]) => tail === 0)).toBe(true);
+  expect(on.some(([, , head]) => head > 0.1 && head < 0.9)).toBe(true);
+  expect(on.every(([, , head], i) => i === 0 || head >= on[i - 1][2])).toBe(true);
+  // slow, fast, slow: the first quarter of the line takes longer than the middle half
+  const when = (x: number) => on.find(([, , head]) => head >= x)![0];
+  expect(when(0.25) - on[0][0]).toBeGreaterThan(when(0.75) - when(0.25));
+});
+
 test("overview: quick buttons under the Active course scene switch the marks, highlights and boxes, and pick and play history cards", async ({ context }) => {
   test.slow();
   const { dock, overlay } = await open(context);
