@@ -73,6 +73,85 @@ describe("venues", () => {
   });
 });
 
+describe("every Japanese G1 / JpnI course", () => {
+  const venue = (id: string) => VENUES.find((v) => v.id === id)!;
+  const track = (v: string, t: string) => venue(v).tracks.find((x) => x.id === t)!;
+  const find = (course: string, surface: "Turf" | "Dirt", distanceM: number | null = null) => {
+    const race = r11();
+    return courseOf({ ...race, course, surface, distanceM, intro: { ...race.intro, course: { ...race.intro.course, venue: null, track: null } } });
+  };
+  const run = (t: ReturnType<typeof track>, d: number) => startOf(t, d).chute + racePieces(t, d).reduce((a, [x, y]) => a + y - x, 0);
+
+  it("has the JRA courses with G1s and the NAR courses with JpnIs", () => {
+    expect(VENUES.map((v) => v.id).sort()).toEqual(
+      ["chukyo", "funabashi", "hanshin", "kanazawa", "kawasaki", "kyoto", "morioka", "nakayama", "ohi", "tokyo", "urawa"]);
+    expect(venue("tokyo").direction).toBe("left");
+    expect(venue("nakayama").direction).toBe("right");
+    expect(venue("ohi").direction).toBe("right");
+    expect(venue("kawasaki").direction).toBe("left");
+    expect(venue("kanazawa").direction).toBe("right");
+  });
+  it("every track: home, back and four corners in running order from the post, a hill within the height difference", () => {
+    for (const v of VENUES) for (const t of v.tracks) {
+      const ids = t.sections.map((x) => x.id);
+      expect(ids, `${v.id} ${t.id}`).toEqual(["home", "c1", "c2", "back", "c3", "c4"]);
+      for (let i = 1; i < t.sections.length; i++) expect(t.sections[i].from).toBeCloseTo(t.sections[i - 1].to, 1);
+      // the home straight runs through the post and is the official length up to it
+      const home = t.sections[0];
+      expect(home.from, `${v.id} ${t.id}`).toBeCloseTo(-t.homestretch, -1);
+      expect(home.to).toBeGreaterThanOrEqual(0);
+      expect(t.sections[5].to - t.length).toBeCloseTo(home.from, 1);
+      for (let s = 0; s < t.length; s += 25) {
+        const h = heightAt(t, s);
+        expect(h).toBeGreaterThanOrEqual(-0.01);
+        expect(h).toBeLessThanOrEqual(t.height + 0.01);
+      }
+      for (const d of [1200, 1600, 2000, 2400]) expect(run(t, d), `${v.id} ${t.id} ${d}`).toBeCloseTo(d, 5);
+    }
+  });
+  it("finds the venue by the names race cards use; Tokyo is never Tokyo City Keiba", () => {
+    expect(find("Tokyo", "Turf")?.venue.id).toBe("tokyo");
+    expect(find("Tokyo Racecourse", "Dirt")?.venue.id).toBe("tokyo");
+    for (const n of ["Oi", "Ohi", "TCK", "Tokyo City Keiba", "Ohi Racecourse"]) expect(find(n, "Dirt")?.venue.id, n).toBe("ohi");
+    for (const n of ["Nakayama", "Hanshin", "Chukyo", "Kawasaki", "Funabashi", "Urawa", "Morioka", "Kanazawa"]) {
+      expect(find(n, "Dirt")?.venue.id, n).toBe(n.toLowerCase());
+    }
+  });
+  it("picks the inner or outer course by the race's distance", () => {
+    expect(find("Nakayama", "Turf", 2000)?.track.id).toBe("turf-inner"); // Satsuki Sho
+    expect(find("Nakayama", "Turf", 2500)?.track.id).toBe("turf-inner"); // Arima Kinen
+    expect(find("Nakayama", "Turf", 1200)?.track.id).toBe("turf-outer"); // Sprinters Stakes
+    expect(find("Hanshin", "Turf", 1600)?.track.id).toBe("turf-outer"); // Oka Sho
+    expect(find("Hanshin", "Turf", 2200)?.track.id).toBe("turf-inner"); // Takarazuka Kinen
+    expect(find("Kyoto", "Turf", 1600)?.track.id).toBe("turf-outer"); // Mile Championship
+    expect(find("Kyoto", "Turf", 2000)?.track.id).toBe("turf-inner"); // Shuka Sho
+    expect(find("Oi", "Dirt", 2000)?.track.id).toBe("outer"); // Tokyo Daishoten
+    expect(find("Funabashi", "Dirt", 1600)?.track.id).toBe("outer"); // Kashiwa Kinen
+    expect(find("Morioka", "Turf", 1600)?.track.id).toBe("turf");
+  });
+  it("starts up the chute where the race does", () => {
+    // Tokyo: the February Stakes (dirt 1600) starts on the turf behind the 2nd corner; turf 1600 / 1800 up the same
+    // spur, the Tenno Sho (Autumn) 2000 on the loop by the 1st corner
+    for (const [t, d] of [["dirt", 1600], ["turf", 1600], ["turf", 1800]] as const) expect(startOf(track("tokyo", t), d).chute, `${t} ${d}`).toBeGreaterThan(0);
+    expect(startOf(track("tokyo", "turf"), 2000).chute).toBe(0);
+    expect(cornersRun(track("tokyo", "dirt"), 1600)).toBe(2);
+    // Morioka's mile (Mile Championship Nambu Hai) is as long as the lap: from the far end of the chute, no lap
+    const m = track("morioka", "dirt");
+    expect(startOf(m, 1600)).toMatchObject({ laps: 0 });
+    expect(startOf(m, 1600).chute).toBeCloseTo(1600 - (m.length - m.chute!.join), 5);
+    expect(startOf(m, 1600).chute).toBeLessThanOrEqual(m.chute!.length * 1.05);
+    expect(cornersRun(m, 1600)).toBe(2);
+    // Kawasaki 1600 (Zen-Nippon Nisai Yushun): 100 m up the chute behind the 4th corner, then a whole lap
+    expect(startOf(track("kawasaki", "dirt"), 1600).chute).toBeCloseTo(100, 0);
+    expect(cornersRun(track("kawasaki", "dirt"), 1600)).toBe(4);
+    // Kawasaki Kinen (2100): from the start of the back straight, six corners
+    expect(cornersRun(track("kawasaki", "dirt"), 2100)).toBe(6);
+  });
+  it("a flat course says FLAT, not 0 m", () => {
+    expect(courseFacts(track("ohi", "outer"), 2000).height).toBe(0);
+  });
+});
+
 describe("runner intro and starting gate", () => {
   it("goes in gate order without scratched horses", () => {
     const race = r11();

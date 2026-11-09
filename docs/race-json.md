@@ -140,7 +140,7 @@
 
 | ช่อง | ชนิด | ค่าเริ่มต้น | ความหมาย |
 | --- | --- | --- | --- |
-| `course.venue` / `course.track` | string หรือ `null` | `null` | สนามและลู่ของฉากสนาม เช่น `"kyoto"` / `"turf-outer"` (`null` = หาเองจาก `course` และ `surface` ของรายการ) ตอนนี้มี `kyoto`: `turf-outer`, `turf-inner`, `dirt` |
+| `course.venue` / `course.track` | string หรือ `null` | `null` | สนามและลู่ของฉากสนาม เช่น `"kyoto"` / `"turf-outer"` (`null` = หาเองจาก `course` และ `surface` ของรายการ) ลู่ใน/นอกเลือกจากระยะการแข่ง สนามที่มี: `chukyo`: `turf`, `dirt`; `funabashi`: `outer`, `inner`; `hanshin`: `turf-inner`, `turf-outer`, `dirt`; `kanazawa`: `dirt`; `kawasaki`: `dirt`; `kyoto`: `turf-outer`, `turf-inner`, `dirt`; `morioka`: `dirt`, `turf`; `nakayama`: `turf-inner`, `turf-outer`, `dirt`; `ohi`: `outer`, `inner`; `tokyo`: `turf`, `dirt`; `urawa`: `dirt` |
 | `course.globe` | boolean | `true` | เริ่มจากโลก 3D หมุนเข้ามาแล้วซูมลงสนาม (ปิด = เข้าสนามเลย) |
 | `course.since` | number | `0` | เปลี่ยนค่านี้ = เล่นฉากสนามใหม่ตั้งแต่ต้น (ปุ่ม "เล่นใหม่" ใน dock) |
 | `course.path` | boolean | `true` | ไฮไลต์ลู่ตามระยะการแข่งขันสีเหลือง ตั้งแต่จุดปล่อยตัวถึงเส้นชัย |

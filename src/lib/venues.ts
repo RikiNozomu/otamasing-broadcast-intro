@@ -13,7 +13,16 @@ export interface Section { id: SectionId; kind: "straight" | "corner"; from: num
  * start would fall up to `length` metres before `join` on the loop starts up the chute instead and runs into the loop
  * at `join`. `line` is its centre line, from the far end to the loop (metres, like the running line).
  */
-export interface Chute { join: number; length: number; line: [number, number][] }
+export interface Chute {
+  join: number;
+  length: number;
+  line: [number, number][];
+  /**
+   * Race distances that start up the chute whatever the arithmetic says: a race as long as the lap (Morioka's mile)
+   * starts at the far end of the chute instead of going a whole lap round.
+   */
+  distances?: number[];
+}
 export interface Track {
   id: string;
   label: string;
@@ -28,6 +37,8 @@ export interface Track {
   /** Height (m) every 10 m from the post: [s, h]. */
   elevation: [number, number][];
   chute?: Chute;
+  /** Race distances usually run on this track, to pick it over another of the same surface (inner or outer course). */
+  distances?: number[];
 }
 export interface Venue {
   id: string;
@@ -38,6 +49,8 @@ export interface Venue {
   lat: number;
   lon: number;
   direction: "right" | "left";
+  /** Other names a race card may use for the venue, lower case ("oi", "tck" for Ohi). */
+  aliases?: string[];
   source: string;
   /** Thin context lines: every track edge around the venue. */
   outline: [number, number][][];
@@ -54,26 +67,39 @@ export const SECTION_LABEL: Record<SectionId, string> = {
 /** `s` on the loop (0 ≤ s < length). */
 export const wrap = (s: number, length: number) => ((s % length) + length) % length;
 
-/** The venue and track of a race: as set in the dock, or found from the race's course name and surface. */
-export function courseOf(race: Pick<Race, "course" | "surface" | "intro">, venues = VENUES): { venue: Venue; track: Track } | null {
+/** A course name as race cards write it, without "Racecourse" and the like: "Tokyo Racecourse" -> "tokyo". */
+const bare = (name: string) => name.trim().toLowerCase().replace(/\s+(racecourse|race course|race track|keibajo)$/, "");
+
+/**
+ * The venue and track of a race: as set in the dock, or found from the race's course name (the venue's id, name or
+ * another name it goes by first, so "Tokyo" is never Tokyo City Keiba; then the start of its name), surface and
+ * distance (inner or outer course).
+ */
+export function courseOf(race: Pick<Race, "course" | "surface" | "intro"> & { distanceM?: number | null }, venues = VENUES): { venue: Venue; track: Track } | null {
   const c = race.intro.course;
-  const name = race.course.trim().toLowerCase();
+  const name = bare(race.course);
   const venue = venues.find((v) => v.id === c.venue)
-    ?? (name ? venues.find((v) => v.id === name || v.name.toLowerCase().startsWith(name)) : undefined);
+    ?? (name ? venues.find((v) => v.id === name || bare(v.name) === name || v.aliases?.includes(name))
+      ?? venues.find((v) => v.name.toLowerCase().startsWith(name)) : undefined);
   if (!venue) return null;
+  const d = race.distanceM ?? null;
+  const surface = venue.tracks.filter((t) => t.surface === race.surface);
   const track = venue.tracks.find((t) => t.id === c.track)
-    ?? venue.tracks.find((t) => t.surface === race.surface)
+    ?? (d ? surface.find((t) => t.distances?.includes(d)) : undefined)
+    ?? surface[0]
     ?? venue.tracks[0];
   return track ? { venue, track } : null;
 }
 
 /**
- * Metres a race of `distance` runs on the chute before it reaches the loop (0 when it starts on the loop). The chute
- * as drawn can come out a few metres short of the official distances, so a start just past its far end still counts.
+ * Metres a race of `distance` runs on the chute before it reaches the loop (0 when it starts on the loop): when its
+ * start, counted back round the loop (laps and all), falls on the stretch the chute stands in for. The chute as drawn
+ * can come out a few metres short of the official distances, so a start just past its far end still counts.
  */
 export function chuteRun(track: Pick<Track, "length" | "chute">, distance: number): number {
   const c = track.chute;
-  if (!c || distance >= track.length) return 0;
+  if (c?.distances?.includes(distance)) return Math.max(0, distance - (track.length - c.join));
+  if (!c) return 0;
   const back = c.join - wrap(-distance, track.length);
   return back > 0 && back <= c.length * 1.05 ? back : 0;
 }
@@ -83,7 +109,8 @@ export function chuteRun(track: Pick<Track, "length" | "chute">, distance: numbe
  * after it, and `chute`: metres up the chute from where it joins the loop when the race starts there (else 0).
  */
 export function startOf(track: Pick<Track, "length" | "chute">, distance: number) {
-  return { s: wrap(-distance, track.length), laps: Math.floor(distance / track.length), chute: chuteRun(track, distance) };
+  const chute = chuteRun(track, distance);
+  return { s: wrap(-distance, track.length), laps: Math.floor((distance - chute) / track.length), chute };
 }
 
 /**

@@ -7,7 +7,8 @@
  *    second colour drawn from the start to the post, then the camera swings from straight down into a slow orbit.
  *
  * Options change while it runs (path, hill in 3D, start/finish, chevrons, focus on straights/corners) and fade
- * in or out. Heights are real metres in a group whose y scale is the exaggeration, so turning the hill on just
+ * in or out, except the path: switched on it draws itself from the start to the post again, switched off it is wiped
+ * away from the start to the post, both slow, fast, slow. Heights are real metres in a group whose y scale is the exaggeration, so turning the hill on just
  * grows that scale.
  */
 import * as THREE from "three";
@@ -39,6 +40,8 @@ export interface CourseOptions {
 const SPIN_END = 2.8, DIVE_END = 4.9, COURSE_AT = 4.5, GLOBE_GONE = 5.6;
 /** The course part: camera from straight down into the orbit; the path draws itself from the start. */
 const ZOOM_S = 2.2, TILT_AT = 1.3, ENTRY_S = 4.2, DRAW_AT = 1.4, DRAW_S = 2.2;
+/** The path switched on or off later: drawn in or wiped away over this many seconds. */
+const PATH_S = DRAW_S;
 /** One orbit every this many seconds. */
 const ORBIT_S = 150;
 /** Started this far in (no globe), the camera is already orbiting and the path drawn: the backdrop of other scenes. */
@@ -163,7 +166,13 @@ export class CourseView3D {
   private postLine?: THREE.Mesh;
 
   private elev = 1;
-  private show = { path: 1, startFinish: 1, chevrons: 1, wall: 0 };
+  private show = { startFinish: 1, chevrons: 1, wall: 0 };
+  /**
+   * The visible part of the path, fractions of it from the start: [tail, head]. A switch eases both from where they
+   * are (`from`) to `to`, starting at course time `at`: on draws the head to the post (from the start again when
+   * nothing shows), off brings the tail up to the head.
+   */
+  private pathDraw = { on: true, at: DRAW_AT, from: [0, 0], to: [0, 1], cur: [0, 0] };
   private opts: CourseOptions;
   private courseAt: number;
   private pieces: Span[];
@@ -201,7 +210,8 @@ export class CourseView3D {
     this.buildCourse();
     this.elev = opts.elevation ? opts.elevationScale : 1;
     this.ground.scale.y = this.elev;
-    this.show = { path: opts.path ? 1 : 0, startFinish: opts.startFinish ? 1 : 0, chevrons: opts.chevrons ? 1 : 0, wall: opts.elevation ? 1 : 0 };
+    this.show = { startFinish: opts.startFinish ? 1 : 0, chevrons: opts.chevrons ? 1 : 0, wall: opts.elevation ? 1 : 0 };
+    this.pathDraw = { on: opts.path, at: DRAW_AT, from: [0, 0], to: [0, opts.path ? 1 : 0], cur: [0, 0] };
     host.dataset.phase = world ? "globe" : "course";
     this.frame = this.frame.bind(this);
     this.raf = requestAnimationFrame(this.frame);
@@ -209,6 +219,23 @@ export class CourseView3D {
 
   setOptions(o: CourseOptions) {
     this.opts = o;
+  }
+
+  /** The visible part of the path now, [tail, head], after following a switch of the path option. */
+  private pathFrame(t: number) {
+    const d = this.pathDraw;
+    if (d.on !== this.opts.path) {
+      const [tail, head] = d.cur, empty = head - tail < 0.002;
+      d.on = this.opts.path;
+      d.at = Math.max(t, DRAW_AT);
+      d.from = d.on && empty ? [0, 0] : [tail, head];
+      d.to = d.on ? [0, 1] : [head, head];
+    }
+    const k = ease(clamp01((t - d.at) / PATH_S));
+    d.cur = [d.from[0] + (d.to[0] - d.from[0]) * k, d.from[1] + (d.to[1] - d.from[1]) * k];
+    const shown = `${d.cur[0].toFixed(2)}-${d.cur[1].toFixed(2)}`;
+    if (this.host.dataset.pathShown !== shown) this.host.dataset.pathShown = shown;
+    return d.cur;
   }
 
   /** Point and direction on the loop at official metres `s` from the post (height not applied). */
@@ -476,7 +503,6 @@ export class CourseView3D {
     this.elev = approach(this.elev, o.elevation ? o.elevationScale : 1, dt, 2.5);
     this.ground.scale.y = this.elev;
     this.markers.scale.y = 1;
-    this.show.path = approach(this.show.path, o.path ? 1 : 0, dt);
     this.show.startFinish = approach(this.show.startFinish, o.startFinish ? 1 : 0, dt);
     this.show.chevrons = approach(this.show.chevrons, o.chevrons ? 1 : 0, dt);
     this.show.wall = approach(this.show.wall, o.elevation ? 1 : 0, dt, 2.5);
@@ -491,10 +517,11 @@ export class CourseView3D {
     if (this.loop) this.loop.mat.opacity = 0.12 * appear;
     if (this.wall) this.wall.mat.opacity = 0.16 * this.show.wall * appear;
     if (this.path) {
-      const draw = ease(clamp01((t - DRAW_AT) / DRAW_S));
-      // draw whole quads (6 indices) so the growing end stays square
-      this.path.mesh.geometry.setDrawRange(0, Math.floor((this.path.count * draw) / 6) * 6);
-      this.path.mat.opacity = 0.92 * this.show.path * appear * (anyFocus ? 0.45 : 1);
+      const [tail, head] = this.pathFrame(t);
+      // draw whole quads (6 indices) so the moving ends stay square
+      const quads = this.path.count / 6, a = Math.floor(quads * tail) * 6, b = Math.floor(quads * head) * 6;
+      this.path.mesh.geometry.setDrawRange(a, Math.max(0, b - a));
+      this.path.mat.opacity = 0.92 * appear * (anyFocus ? 0.45 : 1);
     }
     for (const f of this.focusRibbons) {
       const on = focusIds.has(f.id as never) ? 1 : 0;
