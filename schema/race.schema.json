@@ -1164,7 +1164,8 @@
                           "stripesDense",
                           "zigzagBand",
                           "blocks",
-                          "stripe1"
+                          "stripe1",
+                          "epaulets"
                         ],
                         "default": "plain"
                       },
