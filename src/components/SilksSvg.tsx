@@ -191,6 +191,8 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
     case "stripe1": return <g fill="none" stroke={c} strokeWidth={50}>{alongOuterEdge(50, 0.15)}</g>;
     case "zigzagBand": return <g stroke={c}>{ZIGZAG_BAND}</g>;
     // large squares in two columns down the sleeve, alternating sides
+    // a short broad bar on top of each shoulder, running down the arm (Aga Khan green with red epaulets)
+    case "epaulets": return <g fill={c}>{alongSleeves([0.16], () => <rect x={0} y={-110} width={72} height={220} />)}</g>;
     case "blocks": return <g fill={c}>{alongSleeves([0.18, 0.34, 0.5, 0.66, 0.82, 0.98], (i) => <rect x={i % 2 ? 0 : -120} y={-62} width={120} height={124} />)}</g>;
     default: return null;
   }

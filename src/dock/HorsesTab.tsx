@@ -59,7 +59,7 @@ const BODY_LABEL: Record<Silks["pattern"], string> = {
 const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
   plain: "Plain", hoop1: "Armlet", hoop2: "Two armlets", hoop3: "Three armlets", stripes: "Stripes", chevrons: "Chevrons",
   diamonds: "Diamonds", check: "Check", spots: "Spots", stars: "Stars", cuffs: "Cuffs", halved: "Halved",
-  hoop4: "Four armlets", hoop5: "Five armlets", stripesDense: "Fine stripes", zigzagBand: "Zigzag band", blocks: "Blocks", stripe1: "One stripe",
+  hoop4: "Four armlets", hoop5: "Five armlets", stripesDense: "Fine stripes", zigzagBand: "Zigzag band", blocks: "Blocks", stripe1: "One stripe", epaulets: "Epaulets",
 };
 
 const MODE_LABEL: Record<SilksMode, string> = { upload: "Upload", pattern: "Pattern", none: "ไม่มี" };
