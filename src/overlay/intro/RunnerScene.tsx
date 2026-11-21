@@ -92,8 +92,8 @@ function RunnerInfo({ race, h, leaving }: { race: Race; h: Runner; leaving: bool
       {/* a giant outlined number behind everything */}
       <motion.span aria-hidden="true" className="absolute top-[-60px] right-[40px] font-display text-[760px] leading-none font-extrabold text-transparent [-webkit-text-stroke:4px_rgb(255_255_255/.12)]"
         initial={{ opacity: 0, x: 120 }} animate={leaving ? out : { opacity: 1, x: 0, transition: { duration: 0.7, ease: EASE } }} exit={{ opacity: 0, x: -80, transition: { duration: 0.3 } }}>{h.number}</motion.span>
-      {/* the jockey's photo on the right, standing on the bar */}
-      <motion.div className="absolute right-[70px] w-[620px]" style={{ top: 150, height: LINE_Y - 150 }}
+      {/* the jockey's photo on the right, big: standing on the line, up to the top of the screen */}
+      <motion.div data-testid="jockey-photo-box" className="absolute right-0 w-[1180px]" style={{ top: 0, height: LINE_Y }}
         initial={{ opacity: 0, x: 160 }} animate={leaving ? { opacity: 0, x: 160, transition: { duration: 0.3, ease: EASE } } : { opacity: 1, x: 0, transition: { duration: 0.6, ease: EASE, delay: 0.15 } }}
         exit={{ opacity: 0, x: 100, transition: { duration: 0.25, ease: EASE } }}>
         <JockeyPhoto name={h.jockey} horse={horse} />
