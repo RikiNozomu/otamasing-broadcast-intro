@@ -1130,7 +1130,8 @@
                           "spots3",
                           "triangle",
                           "sashReverse",
-                          "blockGrid"
+                          "blockGrid",
+                          "epaulets"
                         ],
                         "default": "plain"
                       },
@@ -1165,7 +1166,8 @@
                           "zigzagBand",
                           "blocks",
                           "stripe1",
-                          "epaulets"
+                          "epaulets",
+                          "bigHarlequin"
                         ],
                         "default": "plain"
                       },
