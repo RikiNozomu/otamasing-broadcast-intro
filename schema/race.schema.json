@@ -1130,7 +1130,8 @@
                           "spots3",
                           "triangle",
                           "sashReverse",
-                          "blockGrid"
+                          "blockGrid",
+                          "epaulets"
                         ],
                         "default": "plain"
                       },

@@ -64,7 +64,7 @@ const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "สีต้องเป็�
  */
 export const SILKS_BODY = ["plain", "hoop1", "hoop2", "hoop3", "belt", "sash", "cross", "stripes", "seams", "braces", "halves", "quartered", "check", "harlequin", "diamondBand", "chevron", "bigV", "sawtooth", "hash", "yoke", "spots", "stars", "star", "ring", "diamond",
   "jaggedYoke", "zigzag2", "zigzagBand", "rings", "bigCheck", "bigHarlequin", "bigDiamondBand",
-  "disc", "fleurDeLys", "spots3", "triangle", "sashReverse", "blockGrid"] as const;
+  "disc", "fleurDeLys", "spots3", "triangle", "sashReverse", "blockGrid", "epaulets"] as const;
 /** Sleeve patterns: armlets (one to five), stripes along the arm (two, or four dense ones), a thick zigzag band (with the body's zigzagBand), chevrons, diamonds, check, spots, stars, cuffs, halved (top/bottom). */
 export const SILKS_SLEEVES = ["plain", "hoop1", "hoop2", "hoop3", "stripes", "chevrons", "diamonds", "check", "spots", "stars", "cuffs", "halved",
   "hoop4", "hoop5", "stripesDense", "zigzagBand", "blocks", "stripe1", "epaulets"] as const;

@@ -127,6 +127,8 @@ function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
     // squares in a loose grid: two columns either side of the centre (the outer ones cut by the side seams), four rows
     case "blockGrid": return <g fill={c}>{[61, 252, 457, 651].flatMap((y) => [-342, -108, 108, 342].map((dx) => <rect key={`${y}${dx}`} x={CX + dx - 56} y={y - 54} width={112} height={108} />))}</g>;
     case "sashReverse": return <line x1={980} y1={-40} x2={300} y2={760} stroke={c} strokeWidth={130} />;
+    // a broad bar along each shoulder seam on the body, widest at the top (Aga Khan Studs: green, red epaulets)
+    case "epaulets": return <g fill={c}><polygon points="320,46 435,40 425,235 355,275" /><polygon points="960,46 845,40 855,235 925,275" /></g>;
     case "bigDiamondBand": return <g fill={c}>{[CX - 225, CX, CX + 225].map((x) => diamond(x, 380, 113, 152, x))}</g>;
     default: return null;
   }

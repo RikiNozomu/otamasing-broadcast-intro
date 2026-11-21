@@ -54,7 +54,7 @@ const BODY_LABEL: Record<Silks["pattern"], string> = {
   seams: "Seams", braces: "Braces", halves: "Halves", quartered: "Quartered", check: "Check", harlequin: "Harlequin", diamondBand: "Diamonds",
   chevron: "Chevron", bigV: "Large V", sawtooth: "Zigzag", hash: "Hash", yoke: "Yoke", spots: "Spots", stars: "Stars", star: "Star", ring: "Ring", diamond: "Diamond",
   jaggedYoke: "Jagged yoke", zigzag2: "Double zigzag", zigzagBand: "Zigzag band", rings: "Rings", bigCheck: "Large check", bigHarlequin: "Large harlequin", bigDiamondBand: "Large diamonds",
-  disc: "Disc (ball)", fleurDeLys: "Fleur-de-lys", spots3: "Three diagonal spots", triangle: "Triangle", sashReverse: "Sash (reversed)", blockGrid: "Block grid",
+  disc: "Disc (ball)", fleurDeLys: "Fleur-de-lys", spots3: "Three diagonal spots", triangle: "Triangle", sashReverse: "Sash (reversed)", blockGrid: "Block grid", epaulets: "Epaulets",
 };
 const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
   plain: "Plain", hoop1: "Armlet", hoop2: "Two armlets", hoop3: "Three armlets", stripes: "Stripes", chevrons: "Chevrons",
