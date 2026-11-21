@@ -56,6 +56,10 @@ const FLEUR = (
   ].map((d) => <path key={d} d={d} />)}</>
 );
 
+/** Big touching diamonds over the whole picture, about three across the body; the sleeves' bigHarlequin lines up with it. */
+const BIG_HARLEQUIN = Array.from({ length: 4 }, (_, r) => Array.from({ length: 6 }, (_, k) =>
+  diamond(CX + 108 + (k - 3) * 216, 490 + (r - 2) * 204, 108, 102, `${r}${k}`))).flat();
+
 /** Rows of spots / stars: two columns, three rows (stars: 2-1-2). */
 const GRID_2X3 = [[500, 165], [780, 165], [500, 352], [780, 352], [500, 540], [780, 540]];
 const QUINCUNX = [[487, 220], [793, 220], [640, 376], [487, 540], [793, 540]];
@@ -110,11 +114,7 @@ function bodyPattern(p: Silks["pattern"], c: string): ReactNode {
     // a column of squares on the centre line, the middle one in the accent colour
     case "bigCheck": return <g fill={c}>{checks(162, 145, CX - 81, 294)}</g>;
     // accent diamonds about three across, the body colour's diamonds between them
-    case "bigHarlequin": {
-      const out: ReactNode[] = [];
-      for (let row = -2; row < 2; row++) for (let col = -3; col < 3; col++) out.push(diamond(CX + 108 + col * 216, 490 + row * 204, 108, 102, `${row}${col}`));
-      return <g fill={c}>{out}</g>;
-    }
+    case "bigHarlequin": return <g fill={c}>{BIG_HARLEQUIN}</g>;
     // three big tall diamonds across the middle, touching
     // a large solid disc ("ball") on the centre of the body
     case "disc": return <circle cx={CX} cy={340} r={165} fill={c} />;
@@ -185,6 +185,8 @@ function sleevePattern(p: Silks["sleevePattern"], c: string): ReactNode {
     case "spots": return <g fill={c}>{alongSleeves([0.48, 0.63, 0.78, 0.93], () => <circle cx={-18} r={30} />)}</g>;
     case "stars": return <g fill={c}>{alongSleeves([0.25, 0.45, 0.65, 0.85], () => star(0, 0, 44))}</g>;
     case "check": return <g fill={c}>{checks(72)}</g>;
+    // big touching diamonds all over the sleeve, lined up with the body's bigHarlequin
+    case "bigHarlequin": return <g fill={c}>{BIG_HARLEQUIN}</g>;
     case "hoop4": return hoops(HOOPS.hoop4, c);
     case "hoop5": return hoops(HOOPS.hoop5, c);
     // four thin stripes packed together on the outer side of each sleeve, shoulder to cuff

@@ -1166,7 +1166,8 @@
                           "zigzagBand",
                           "blocks",
                           "stripe1",
-                          "epaulets"
+                          "epaulets",
+                          "bigHarlequin"
                         ],
                         "default": "plain"
                       },
