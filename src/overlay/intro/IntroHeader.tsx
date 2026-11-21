@@ -37,7 +37,7 @@ export function IntroHeader({ race, tag, width = 1500 }: { race: Race; tag: stri
           {raceFacts(race).map((f, i) => <span key={i}>{i > 0 && <span className="px-3 text-white/55">·</span>}{f}</span>)}
         </div>
       </motion.div>
-      <motion.div className="absolute top-[40px] right-[60px] w-36" initial={{ opacity: 0 }} animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4 }}>
+      <motion.div className="absolute top-[40px] right-[60px] w-44" initial={{ opacity: 0 }} animate={{ opacity: leaving ? 0 : 1 }} transition={{ duration: 0.4 }}>
         <Logo />
       </motion.div>
     </>

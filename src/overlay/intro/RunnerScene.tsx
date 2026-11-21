@@ -181,7 +181,7 @@ export function RunnerScene({ race }: { race: Race }) {
         </span>
         <span data-testid="race-name" className="font-display text-[48px] leading-none font-bold uppercase [text-shadow:0_2px_12px_rgb(0_0_0/.45)]">{race.name}</span>
       </motion.div>
-      <motion.div className="absolute top-[40px] right-[60px] w-36" initial={{ opacity: 0 }} animate={{ opacity: leaving ? 0 : 1 }}><Logo /></motion.div>
+      <motion.div className="absolute top-[40px] right-[60px] w-44" initial={{ opacity: 0 }} animate={{ opacity: leaving ? 0 : 1 }}><Logo /></motion.div>
     </div>
   );
 }
