@@ -7,7 +7,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { lazy, Suspense, type CSSProperties } from "react";
 import type { Race, Runner } from "../../lib/model";
-import { boxColors, drawOf, boxExtra } from "../../lib/colors";
+import { boxColors, drawOf, boxExtra, numberFont } from "../../lib/colors";
 import { gridPage, horseFor, stallOf } from "../../lib/intro";
 import { courseOf } from "../../lib/venues";
 import { useData } from "../../lib/store";
@@ -58,7 +58,7 @@ export function GridScene({ race }: { race: Race }) {
           : { opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)", transition: { duration: 0.42, ease: EASE, delay: 0.35 + i * 0.06 } }}
         exit={{ opacity: 0, x: 120, transition: { duration: 0.25, ease: EASE, delay: i * 0.03 } }}>
         {show.draw && <span data-testid="gate" className={boxCls(gate)} style={gate ? { background: gate[0], color: gate[1], ...boxExtra(gate) } : undefined}>{dw}</span>}
-        {show.number && <span data-testid="number" className={boxCls(num)} style={num ? { background: num[0], color: num[1], ...boxExtra(num) } : undefined}>{h.number}</span>}
+        {show.number && <span data-testid="number" className={boxCls(num)} style={{ ...numberFont(S), ...(num && { background: num[0], color: num[1], ...boxExtra(num) }) }}>{h.number}</span>}
         {show.silks && (hasSilks(horse, d.images)
           ? <span data-testid="silks" className="grid h-full place-items-center rounded-[6px] bg-white/95 p-[3px]"><HorseSilks horse={horse} className="h-full w-full" /></span>
           // no silks set for this horse yet: a quiet empty slot instead of a blank white card

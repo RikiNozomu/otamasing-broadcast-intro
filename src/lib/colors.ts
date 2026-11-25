@@ -25,6 +25,8 @@ export const HK_FONT = '"IBM Plex Sans", system-ui, sans-serif';
 export const GB_NO: Pair = ["#0B0069", "#FFFFFF"];
 export const FR_NO: Pair = ["#C00F0C", "#FFFFFF"];
 export const YELLOW_DRAW: Pair = ["#FFED0D", "#000000"];
+/** Hong Kong races (DRAW in the Hong Kong colours): the horse numbers are set in IBM Plex Sans too. */
+export const numberFont = (s: Pick<Style, "drawScheme">) => (s.drawScheme === "hk" ? { fontFamily: HK_FONT } : undefined);
 /** Extra style of a box in these colours: the Hong Kong draw number in IBM Plex Sans, a white frame on the British / French NO. */
 export const boxExtra = (c: readonly [string, string] | null) =>
   c === HK ? { fontFamily: HK_FONT } : c === GB_NO || c === FR_NO ? { boxShadow: "inset 0 0 0 3px #fff" } : undefined;

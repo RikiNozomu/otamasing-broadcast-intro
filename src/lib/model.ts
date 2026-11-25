@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { HorseSchema, HorseSettingsSchema, type Horse, type HorseSettings } from "./horseSchema.ts";
-import { IntroSchema, JockeySchema, type Intro, type Jockey } from "./introSchema.ts";
+import { IntroSchema, JockeySchema, WEATHER_KEYS, type Intro, type Jockey } from "./introSchema.ts";
 
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
@@ -137,6 +137,8 @@ export const RaceSchema = z
     class: z.enum(Object.keys(CLASSES) as [RaceClass, ...RaceClass[]]).nullable().default(null),
     surface: z.enum(SURFACES).default("Turf"),
     distanceM: z.number().int().positive().nullable().default(null),
+    /** Weather of the race (shared by compact and intro), shown as the weather logo; null = none. */
+    weather: z.enum(WEATHER_KEYS).nullable().default(null),
     highlight: z.number().int().nullable().default(null),
     style: StyleSchema.default({}),
     result: ResultViewSchema.default({}),

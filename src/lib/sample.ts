@@ -22,10 +22,10 @@ const race = (r: Omit<Race, "style" | "highlight" | "runners" | "result" | "card
 };
 
 export function sampleData(): AppData {
-  const r10 = race({ id: "sample-10", date: "2026-11-29", course: "Tokyo", round: "10R", postTime: "15:01", jpName: "", name: "Shimotsuki Stakes", subtitle: "", grade: null, jump: false, class: null, surface: "Dirt", distanceM: 2100, n: 14 });
-  const r11 = race({ id: "sample-11", date: "2026-11-29", course: "Kyoto", round: "11R", postTime: "13:40", jpName: "第1回 サンプルカップ", name: "Sample Cup", subtitle: "Example race for the broadcast overlay", grade: "G1", jump: false, class: null, surface: "Turf", distanceM: 2200, n: 18 });
+  const r10 = race({ id: "sample-10", date: "2026-11-29", course: "Tokyo", round: "10R", postTime: "15:01", jpName: "", name: "Shimotsuki Stakes", subtitle: "", grade: null, jump: false, class: null, surface: "Dirt", distanceM: 2100, weather: null, n: 14 });
+  const r11 = race({ id: "sample-11", date: "2026-11-29", course: "Kyoto", round: "11R", postTime: "13:40", jpName: "第1回 サンプルカップ", name: "Sample Cup", subtitle: "Example race for the broadcast overlay", grade: "G1", jump: false, class: null, surface: "Turf", distanceM: 2200, weather: "sunny", n: 18 });
   r11.intro = sampleIntro();
-  const r12 = race({ id: "sample-12", date: "2026-11-29", course: "Tokyo", round: "12R", postTime: "16:30", jpName: "", name: "Sample Juvenile", subtitle: "", grade: "G3", jump: false, class: "2YO", surface: "Turf", distanceM: 1600, n: 12 });
+  const r12 = race({ id: "sample-12", date: "2026-11-29", course: "Tokyo", round: "12R", postTime: "16:30", jpName: "", name: "Sample Juvenile", subtitle: "", grade: "G3", jump: false, class: "2YO", surface: "Turf", distanceM: 1600, weather: null, n: 12 });
   r11.runners[5].scratched = true;
   r10.style.drawScheme = "us";
   r10.style.numberScheme = "us";

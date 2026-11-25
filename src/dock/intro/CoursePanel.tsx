@@ -4,7 +4,7 @@ import { introOf, type Race } from "../../lib/model";
 import { FOCUS, GOINGS, WEATHERS, type Focus, type RaceRecord, type Weather } from "../../lib/introSchema";
 import { courseFacts, courseOf, VENUES } from "../../lib/venues";
 import { fetchForecast } from "../../lib/intro";
-import { update, useData } from "../../lib/store";
+import { update, updateRace, useData } from "../../lib/store";
 import { Button } from "../../components/Button";
 import { Field, inputClass } from "../../components/Field";
 import { Section, hintClass } from "../../components/Section";
@@ -36,7 +36,11 @@ export function CoursePanel({ race }: { race: Race }) {
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null);
   const setCourse = (p: Partial<typeof c>) => setIntro(race.id, (x) => ({ ...x, course: { ...x.course, ...p } }));
   const setPanels = (k: keyof typeof c.panels) => setIntro(race.id, (x) => ({ ...x, course: { ...x.course, panels: { ...x.course.panels, [k]: !x.course.panels[k] } } }));
-  const setWeather = (p: Partial<typeof w>) => setIntro(race.id, (x) => ({ ...x, weather: { ...x.weather, ...p, source: p.source ?? "manual" } }));
+  const setWeather = (p: Partial<typeof w>) => {
+    setIntro(race.id, (x) => ({ ...x, weather: { ...x.weather, ...p, source: p.source ?? "manual" } }));
+    // the race's own weather (shared with compact) follows the condition picked here
+    if (p.condition !== undefined) updateRace(race.id, (r) => ({ ...r, weather: p.condition ?? null }));
+  };
   const active = d.active === introOf("course", race.id);
   const facts = found ? courseFacts(found.track, race.distanceM) : null;
   const goings = found?.track.surface === "Dirt" ? GOINGS.Dirt : GOINGS.Turf;
@@ -119,7 +123,7 @@ export function CoursePanel({ race }: { race: Race }) {
         </div>
         {msg && <span role={msg.bad ? "alert" : "status"} className={msg.bad ? "text-xs text-danger-ink" : "text-xs text-ok"}>{msg.text}</span>}
         <Field id="w-cond" label="สภาพอากาศ">
-          <select id="w-cond" className={inputClass} value={w.condition ?? ""} onChange={(e) => setWeather({ condition: (e.target.value || null) as Weather | null })}>
+          <select id="w-cond" className={inputClass} value={race.weather ?? w.condition ?? ""} onChange={(e) => setWeather({ condition: (e.target.value || null) as Weather | null })}>
             <option value="">ไม่แสดง</option>
             {(Object.keys(WEATHERS) as Weather[]).map((k) => <option key={k} value={k}>{WEATHERS[k]}</option>)}
           </select>

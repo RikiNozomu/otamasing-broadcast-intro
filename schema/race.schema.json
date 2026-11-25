@@ -105,6 +105,27 @@
                 ],
                 "default": null
               },
+              "weather": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "sunny",
+                      "partly",
+                      "cloudy",
+                      "fog",
+                      "drizzle",
+                      "rain",
+                      "snow",
+                      "storm"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
               "highlight": {
                 "anyOf": [
                   {

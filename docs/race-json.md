@@ -44,6 +44,7 @@
 | `class` | `"2YO"` `"2YO_F"` `"3YO"` `"FM"` หรือ `null` | `null` | ป้าย Class: 2YO (ฟ้า), 2YO ตัวเมีย (ชมพู), 3YO (ฟ้า), F&M (ชมพู) |
 | `surface` | `"Turf"` `"Dirt"` `"Jump"` | `"Turf"` | พื้นสนาม |
 | `distanceM` | จำนวนเต็ม หรือ `null` | `null` | ระยะ (เมตร) |
+| `weather` | `"sunny"` `"partly"` `"cloudy"` `"fog"` `"drizzle"` `"rain"` `"snow"` `"storm"` หรือ `null` | `null` | สภาพอากาศของรายการ (ใช้ร่วมกันทั้ง compact และ intro) ขึ้นเป็นโลโก้: แดด, เมฆ (partly / cloudy / fog), ฝน (drizzle / rain / storm), หิมะ |
 | `highlight` | จำนวนเต็ม หรือ `null` | `null` | **(compact)** เบอร์ม้าที่ไฮไลต์บนการ์ด |
 | `style` | object | ค่าเริ่มต้นด้านล่าง | สไตล์ของรายการนี้ (สีช่องเบอร์/ซอง ป้ายเกรด ธง) |
 | `photos` | object | – | ลำดับรูปฉากหลังเต็มจอและการเปลี่ยนรูปอัตโนมัติ แยก `card` (ฉากหลังของ STARTING GATE และการ์ดรายชื่อใน compact) กับ `result` **(compact)** (หน้าผล): `keys` (ชื่อรูปตามลำดับ เช่น `["image/20261106031451123.jpg"]`), `auto` (ค่าเริ่มต้น `false` = เปลี่ยนเอง), `seconds` (ค่าเริ่มต้น `5`) |

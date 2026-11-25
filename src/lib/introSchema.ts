@@ -16,7 +16,7 @@ export const WEATHERS = {
   sunny: "Sunny", partly: "Partly Cloudy", cloudy: "Cloudy", fog: "Fog", drizzle: "Drizzle", rain: "Rain", snow: "Snow", storm: "Thunderstorm",
 } as const;
 export type Weather = keyof typeof WEATHERS;
-const WEATHER_KEYS = Object.keys(WEATHERS) as [Weather, ...Weather[]];
+export const WEATHER_KEYS = Object.keys(WEATHERS) as [Weather, ...Weather[]];
 
 /** Track conditions in JRA's English words (turf / dirt). */
 export const GOINGS = {

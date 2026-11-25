@@ -64,6 +64,7 @@ test("edits in the dock reach the STARTING GATE: horse name, flags, toggles", as
   await expect(row.getByTestId("gate")).toHaveCSS("color", "rgb(19, 91, 51)");
   await expect(row.getByTestId("gate")).toHaveCSS("background-color", "rgb(255, 255, 255)");
   await expect(row.getByTestId("gate")).toHaveCSS("font-family", /IBM Plex Sans/);
+  await expect(row.getByTestId("number")).toHaveCSS("font-family", /IBM Plex Sans/);
   await dock.getByTestId("show-horseFlag").click();
   await expect(row.locator("[data-testid=horse] [data-center]")).toHaveCount(0);
 });
