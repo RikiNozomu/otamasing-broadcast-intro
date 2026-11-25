@@ -44,6 +44,7 @@
 | `class` | `"2YO"` `"2YO_F"` `"3YO"` `"FM"` หรือ `null` | `null` | ป้าย Class: 2YO (ฟ้า), 2YO ตัวเมีย (ชมพู), 3YO (ฟ้า), F&M (ชมพู) |
 | `surface` | `"Turf"` `"Dirt"` `"Jump"` | `"Turf"` | พื้นสนาม |
 | `distanceM` | จำนวนเต็ม หรือ `null` | `null` | ระยะ (เมตร) |
+| `weather` | `"sunny"` `"partly"` `"cloudy"` `"fog"` `"drizzle"` `"rain"` `"snow"` `"storm"` หรือ `null` | `null` | สภาพอากาศของรายการ (ใช้ร่วมกันทั้ง compact และ intro) ขึ้นเป็นโลโก้: แดด, เมฆ (partly / cloudy / fog), ฝน (drizzle / rain / storm), หิมะ |
 | `highlight` | จำนวนเต็ม หรือ `null` | `null` | **(compact)** เบอร์ม้าที่ไฮไลต์บนการ์ด |
 | `style` | object | ค่าเริ่มต้นด้านล่าง | สไตล์ของรายการนี้ (สีช่องเบอร์/ซอง ป้ายเกรด ธง) |
 | `photos` | object | – | ลำดับรูปฉากหลังเต็มจอและการเปลี่ยนรูปอัตโนมัติ แยก `card` (ฉากหลังของ STARTING GATE และการ์ดรายชื่อใน compact) กับ `result` **(compact)** (หน้าผล): `keys` (ชื่อรูปตามลำดับ เช่น `["image/20261106031451123.jpg"]`), `auto` (ค่าเริ่มต้น `false` = เปลี่ยนเอง), `seconds` (ค่าเริ่มต้น `5`) |
@@ -60,7 +61,7 @@
 | `draw` | 1–30 หรือ `null` | `null` | ซอง ใช้เมื่อปิด "คำนวณซองอัตโนมัติ" (ถ้าเปิดไว้ จะคิดซองจากเบอร์ตามกฎ JRA) |
 | `name` | string | `""` | ชื่อม้า |
 | `jockey` | string | `""` | ชื่อจ็อกกี้ |
-| `horseCountry` | รหัสประเทศ 2 ตัว หรือ `""` | `""` | ธงหน้าชื่อม้า |
+| `horseCountry` | รหัสประเทศ 2 ตัว, `"MIHO"`, `"RITTO"` หรือ `""` | `""` | ธงหน้าชื่อม้า (`MIHO` / `RITTO` = ป้ายศูนย์ฝึก JRA สีแดง / สีน้ำเงิน แทนธง) |
 | `jockeyCountry` | รหัสประเทศ 2 ตัว หรือ `""` | `""` | ธงหน้าชื่อจ็อกกี้ |
 | `fav` | 1–30 หรือ `null` | `null` | **(compact)** อันดับตัวเต็ง (ขึ้นป้าย 1st, 2nd, …) |
 | `horseWeight` | 200–800 หรือ `null` | `null` | น้ำหนักตัวม้า (กก.) เช่น `486` ขึ้นในฉากแนะนำม้าและ STARTING GATE |
@@ -127,8 +128,8 @@
 
 | ช่อง | ค่า | ค่าเริ่มต้น | ความหมาย |
 | --- | --- | --- | --- |
-| `drawScheme` | `"jra"` `"us"` `"plain"` `"custom"` | `"jra"` | สีช่อง DRAW: JRA 8 สี, saddle towel อเมริกา, กรอบขาว, กำหนดเอง |
-| `numberScheme` | เหมือนด้านบน | `"plain"` | สีช่อง NO. (`"jra"` = สีตามซองของม้า) |
+| `drawScheme` | `"jra"` `"us"` `"hk"` `"gb"` `"fr"` `"plain"` `"custom"` | `"jra"` | สีช่อง DRAW: JRA 8 สี, saddle towel อเมริกา, ฮ่องกง (กล่องขาว ตัวเลขเขียว ฟอนต์ IBM Plex Sans), อังกฤษ / ฝรั่งเศส (เหลือง ตัวเลขดำ), กรอบขาว, กำหนดเอง |
+| `numberScheme` | เหมือนด้านบน | `"plain"` | สีช่อง NO. (`"jra"` = สีตามซองของม้า, `"gb"` = น้ำเงินกรอบขาว, `"fr"` = แดงกรอบขาว) |
 | `autoDraw` | boolean | `true` | คิดซองให้จากเบอร์ตามกฎ JRA (เกิน 8 ตัว ม้าที่เกินไปอยู่ซองท้ายๆ ก่อน) |
 | `gradeStyle` | `"jra"` `"intl"` | `"jra"` | ป้ายเกรดแบบ GI/GII/GIII/LR หรือ G1/G2/G3/L |
 | `show` | object ของ boolean | ทุกช่อง `true` | เว็บนี้ใช้ `grade` (ป้ายเกรด), `horseFlag`, `jockeyFlag` (ธง) ส่วน `draw`, `class`, `fav`, `horseWeight`, `weight` เป็นของการ์ดใน compact **(compact)** (คอลัมน์ของ STARTING GATE เปิดปิดที่ `intro.grid.show`) (`jpName` ยังรับได้แต่ไม่มีผล) |

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bracket, boxColors, JRA, US } from "../../src/lib/colors";
+import { bracket, boxColors, FR_NO, GB_NO, HK, JRA, US, YELLOW_DRAW } from "@otamasing/broadcast-shared/lib/colors";
 import { gradeLabel } from "../../src/lib/labels";
 import { newStyle } from "../../src/lib/model";
 
@@ -45,6 +45,19 @@ describe("box colours", () => {
 });
 
 describe("labels", () => {
+  it("Hong Kong draw boxes are white with a dark green number, whatever the draw", () => {
+    const s = newStyle();
+    expect(HK).toEqual(["#FFFFFF", "#135B33"]);
+    for (const d of [1, 7, 14]) expect(boxColors("hk", d, 3, 14, s, false)).toEqual(HK);
+  });
+
+  it("Britain and France: yellow draw, NO. navy / red", () => {
+    const s = newStyle();
+    expect(boxColors("gb", 4, 4, 9, s, false)).toEqual(YELLOW_DRAW);
+    expect(boxColors("gb", 4, 4, 9, s, true)).toEqual(GB_NO);
+    expect(boxColors("fr", 2, 2, 9, s, true)).toEqual(FR_NO);
+  });
+
   it("grade labels in both styles, with J- for jump races", () => {
     expect(gradeLabel({ grade: "G1", jump: false }, { gradeStyle: "jra" })).toBe("GI");
     expect(gradeLabel({ grade: "L", jump: true }, { gradeStyle: "jra" })).toBe("J-LR");

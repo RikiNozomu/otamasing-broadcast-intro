@@ -5,12 +5,12 @@
  */
 import { motion } from "motion/react";
 import { useState } from "react";
-import { copyText, inObs, saveFile, saveJson } from "../lib/download";
+import { copyText, inObs, saveFile, saveJson } from "@otamasing/broadcast-shared/lib/download";
 import { makeBundle } from "../lib/bundle";
-import { cx } from "../lib/cx";
-import { Button } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { inputClass } from "../components/Field";
-import { hintClass } from "../components/Section";
+import { hintClass } from "@otamasing/broadcast-shared/components/Section";
 
 export type ExportJob = { name: string; text: string; count: number };
 

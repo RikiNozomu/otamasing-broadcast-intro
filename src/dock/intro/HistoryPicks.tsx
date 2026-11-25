@@ -2,8 +2,8 @@
 import type { Race } from "../../lib/model";
 import { playingItem } from "../../lib/intro";
 import { readVideoStatus, videoStatusText } from "../../lib/videoStatus";
-import { cx } from "../../lib/cx";
-import { Button } from "../../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { pickHistory, playHistory, stopHistory, useTick } from "./shared";
 
 export function HistoryPicks({ race }: { race: Race }) {

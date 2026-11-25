@@ -1,5 +1,5 @@
 /** The slideshow of a scene's left-hand pictures: which one is on screen, and the dock's changes to it. */
-import { cycleAt, cycleSet, cycleTo, useCycle } from "./cycle";
+import { cycleAt, cycleSet, cycleTo, useCycle } from "@otamasing/broadcast-shared/lib/cycle";
 import type { PhotoSet } from "./model";
 
 /** Index of the picture on screen at `now` (-1 when there is none). Pictures not in this browser are skipped by the caller. */

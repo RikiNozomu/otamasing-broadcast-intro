@@ -11,10 +11,10 @@ import { imageRefs } from "../lib/imageRefs";
 import { putImage } from "../lib/images";
 import { sampleRunner } from "../lib/sample";
 import { ExportPanel } from "./ExportPanel";
-import { cx } from "../lib/cx";
-import { Button } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import type { Toast } from "./Dock";
 
 const TRANSITION_LABEL: Record<Transition, string> = { stripes: "Stripes (แถบเฉียงแบบ F1 ฉากเก่าออกก่อน)", wipe: "Wipe (แถบเหลืองกวาดจากซ้าย)", slide: "Slide (เลื่อนเข้าจากขวา)", fade: "Fade (จางเข้า)", none: "ไม่มี (ตัดทันที)" };
@@ -100,7 +100,7 @@ export function RacesTab({ onEdit, toast }: { onEdit: (id: string) => void; toas
     const id = newId();
     update((x) => ({
       ...x,
-      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), intro: newIntro(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null })) }],
+      races: [...x.races, { id, date: new Date().toISOString().slice(0, 10), course: "", round: "", postTime: "", name: "New Race", jpName: "", subtitle: "", grade: null, jump: false, class: null, surface: "Turf", distanceM: null, weather: null, highlight: null, style: newStyle(), result: newResult(), card: newCard(), photos: newPhotos(), intro: newIntro(), runners: Array.from({ length: 8 }, (_, i) => ({ ...sampleRunner(i), name: `Horse ${i + 1}`, jockey: "", fav: null, horseWeight: null, horseWeightChange: null, weight: null })) }],
     }));
     onEdit(id);
   };

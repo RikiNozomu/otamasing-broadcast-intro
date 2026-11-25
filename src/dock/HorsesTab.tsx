@@ -10,10 +10,10 @@ import { HorseSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silks
 import { update, useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { dropUnused, storeImage } from "../lib/imageStore";
-import { cx } from "../lib/cx";
-import { Button, buttonClass } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button, buttonClass } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { SilksSvg } from "../components/SilksSvg";
 import { ExportPanel } from "./ExportPanel";
 

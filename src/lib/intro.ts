@@ -2,7 +2,7 @@
  * The race intro scenes' rules: the order runners are introduced in (gate order), what is known about
  * each runner from the horse and jockey tabs, the grid's pages, and the weather forecast.
  */
-import { useCycle, cycleAt, cycleSet, cycleTo } from "./cycle";
+import { useCycle, cycleAt, cycleSet, cycleTo } from "@otamasing/broadcast-shared/lib/cycle";
 import { jockeyKey, type AppData, type Race, type Runner } from "./model";
 import { paginate } from "./paging";
 import type { Horse } from "./horseSchema";

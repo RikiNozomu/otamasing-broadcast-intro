@@ -7,15 +7,15 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../../lib/model";
 import type { Horse } from "../../lib/horses";
-import { boxColors } from "../../lib/colors";
+import { boxColors } from "@otamasing/broadcast-shared/lib/colors";
 import { horseFor, jockeyFor, pedigreeLines, stallOf, useIntroRunner } from "../../lib/intro";
 import { useImage } from "../../lib/images";
 import { useData } from "../../lib/store";
-import { cx } from "../../lib/cx";
-import { Flag } from "../../components/Flag";
-import { FitText } from "../../components/FitText";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
 import { HorseSilks, hasSilks } from "../../components/HorseSilks";
-import { Logo } from "../../components/Logo";
+import { Logo } from "@otamasing/broadcast-shared/components/Logo";
 import { useLeaving } from "../leaving";
 import { EASE, slant } from "./IntroHeader";
 

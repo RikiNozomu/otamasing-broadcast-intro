@@ -1,9 +1,9 @@
 /** Quick controls under the Active race in the overview, for its intro scene on screen. */
 import type { IntroView, Race } from "../../lib/model";
 import { gridPage, introRunners, setRunnerAuto, showRunner, useIntroRunner } from "../../lib/intro";
-import { PageButtons } from "../../components/PageButtons";
-import { Button } from "../../components/Button";
-import { Switch } from "../../components/Switch";
+import { PageButtons } from "@otamasing/broadcast-shared/components/PageButtons";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import { FOCUS_LABEL, INTRO_LABEL, setIntro, toggleHistory } from "./shared";
 import { HistoryPicks } from "./HistoryPicks";
 import { updateRace } from "../../lib/store";

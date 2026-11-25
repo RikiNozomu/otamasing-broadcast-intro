@@ -7,12 +7,12 @@ import { useImage } from "../lib/images";
 import { dropUnused, storeImage } from "../lib/imageStore";
 import { setAuto, showPhoto, shownIndex, useShownIndex } from "../lib/photos";
 import { update, updateRace, useData } from "../lib/store";
-import { cx } from "../lib/cx";
-import { Button, buttonClass } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button, buttonClass } from "@otamasing/broadcast-shared/components/Button";
 import { inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { courseOf } from "../lib/venues";
-import { Switch } from "../components/Switch";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 
 const view = "card";
 

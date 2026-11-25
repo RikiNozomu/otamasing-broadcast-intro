@@ -2,10 +2,10 @@
 import { introOf, type Race } from "../../lib/model";
 import { courseOf } from "../../lib/venues";
 import { update, useData } from "../../lib/store";
-import { Button } from "../../components/Button";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../../components/Field";
-import { Section, hintClass } from "../../components/Section";
-import { Switch } from "../../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import { GatePages } from "./QuickIntro";
 import { setIntro } from "./shared";
 

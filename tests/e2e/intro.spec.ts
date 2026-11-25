@@ -31,11 +31,16 @@ test("course scene: the globe turns in, then the course; options switch while it
   await expect(scene.getByTestId("direction")).toHaveText(/right-handed/i);
   await expect(scene.getByTestId("record-course")).toContainText("2:09.8");
   await expect(scene.getByTestId("panel-weather")).toContainText(/sunny/i);
+  await expect(scene.getByTestId("weather-logo")).toHaveAttribute("data-weather", "sunny");
   await expect(scene.getByTestId("going")).toContainText(/good/i);
   // options from the dock while the camera turns
   await dock.getByRole("tab", { name: "การแข่งขัน" }).click();
   await dock.locator("#sub-course").click();
   await dock.getByTestId("course-elevation").click();
+  // the weather picked here is the race's weather too, shown as the weather logo
+  await dock.locator("#w-cond").selectOption("snow");
+  await expect(scene.getByTestId("weather-logo")).toHaveAttribute("data-weather", "snow");
+  await expect(scene.getByTestId("weather-logo")).toHaveAttribute("src", /snow/);
   await expect(view).toHaveAttribute("data-elevation", "on");
   await dock.locator("#c-focus").selectOption("corners");
   await expect(view).toHaveAttribute("data-focus", "corners");

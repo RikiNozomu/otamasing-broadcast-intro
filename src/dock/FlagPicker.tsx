@@ -2,12 +2,13 @@
 import { motion } from "motion/react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { NATIONS, nationCode, nationName } from "../lib/nations";
-import { cx } from "../lib/cx";
-import { Flag } from "../components/Flag";
+import { CENTERS, NATIONS, nationCode, nationName } from "@otamasing/broadcast-shared/lib/nations";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
 import { inputClass } from "../components/Field";
 
-export function FlagPicker({ value, onChange, label }: { value: string; onChange: (code: string) => void; label: string }) {
+/** `centers`: also offer the MIHO / RITTO badges (horse flag only). */
+export function FlagPicker({ value, onChange, label, centers = false }: { value: string; onChange: (code: string) => void; label: string; centers?: boolean }) {
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
   const close = () => { setOpen(false); btn.current?.focus(); };
@@ -18,12 +19,12 @@ export function FlagPicker({ value, onChange, label }: { value: string; onChange
         {value ? <Flag code={value} className="h-[18px] w-[27px]" /> : <span className="w-[27px] text-center text-[13px] text-ink">–</span>}
         <span aria-hidden="true">▾</span>
       </button>
-      {open && <FlagPopover anchor={btn.current!} value={value} onPick={(c) => { onChange(c); close(); }} onClose={close} />}
+      {open && <FlagPopover anchor={btn.current!} value={value} centers={centers} onPick={(c) => { onChange(c); close(); }} onClose={close} />}
     </>
   );
 }
 
-function FlagPopover({ anchor, value, onPick, onClose }: { anchor: HTMLElement; value: string; onPick: (c: string) => void; onClose: () => void }) {
+function FlagPopover({ anchor, value, centers, onPick, onClose }: { anchor: HTMLElement; value: string; centers: boolean; onPick: (c: string) => void; onClose: () => void }) {
   const [q, setQ] = useState("");
   const pop = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ left: 0, top: 0, above: false });
@@ -47,7 +48,7 @@ function FlagPopover({ anchor, value, onPick, onClose }: { anchor: HTMLElement; 
     return () => { document.removeEventListener("mousedown", down); document.removeEventListener("keydown", key); removeEventListener("scroll", scroll, true); removeEventListener("resize", place); };
   }, [anchor, place]);
   const s = q.trim().toLowerCase();
-  const opts: (readonly [string, string, string])[] = [...NATIONS, ["", "", "ไม่ใส่ธง"] as const].filter(
+  const opts: (readonly [string, string, string])[] = [...(centers ? CENTERS : []), ...NATIONS, ["", "", "ไม่ใส่ธง"] as const].filter(
     ([c, k, n]) => !s || c.toLowerCase().includes(s) || k.toLowerCase().includes(s) || n.toLowerCase().includes(s),
   );
   return createPortal(

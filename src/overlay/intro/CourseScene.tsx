@@ -8,13 +8,13 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Race } from "../../lib/model";
 import { courseFacts, courseOf, type Track, type Venue } from "../../lib/venues";
 import { GOINGS, WEATHERS, type RaceRecord } from "../../lib/introSchema";
-import { cx } from "../../lib/cx";
-import { Flag } from "../../components/Flag";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
 import { useLeaving } from "../leaving";
 import { BACKDROP_SKIP, CourseView3D, loadWorld, type World } from "./course3d";
 import { EASE, IntroHeader, slant } from "./IntroHeader";
 import { HistoryModal } from "./HistoryModal";
-import { WeatherIcon } from "./WeatherIcon";
+import { WeatherLogo } from "@otamasing/broadcast-shared/components/WeatherLogo";
 
 const regionName = (code: string) => {
   try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code; } catch { return code; }
@@ -56,7 +56,9 @@ function RecordLine({ title, r, testId }: { title: string; r: RaceRecord; testId
 }
 
 function Panels({ race, venue, track, delay }: { race: Race; venue: Venue; track: Track; delay: number }) {
-  const P = race.intro.course.panels, rec = race.intro.records, w = race.intro.weather;
+  const P = race.intro.course.panels, rec = race.intro.records;
+  // the race's weather (set in compact or here) wins over the intro's own copy
+  const w = { ...race.intro.weather, condition: race.weather ?? race.intro.weather.condition };
   const facts = courseFacts(track, race.distanceM);
   const boxes: ReactNode[] = [];
   let i = 0;
@@ -95,7 +97,7 @@ function Panels({ race, venue, track, delay }: { race: Race; venue: Venue; track
   if (P.weather && (w.condition || race.intro.going)) boxes.push(
     <Panel key="weather" testId="panel-weather" label="CONDITIONS" i={i++} delay={delay} grow={1}>
       <div className="flex items-center gap-5">
-        {w.condition && <WeatherIcon kind={w.condition} className="size-[84px] flex-none text-yellow" />}
+        {w.condition && <WeatherLogo kind={w.condition} testId="weather-logo" className="size-[84px]" />}
         <div className="grid gap-1">
           {w.condition && <span className="font-display text-[34px] leading-none font-bold uppercase">{WEATHERS[w.condition]}</span>}
           <span className="font-display text-[26px] font-semibold text-white/85">

@@ -10,11 +10,11 @@ import { playingItem } from "../../lib/intro";
 import { readVideoStatus, videoStatusText } from "../../lib/videoStatus";
 import { dropUnused, storeVideo } from "../../lib/imageStore";
 import { update, useData } from "../../lib/store";
-import { cx } from "../../lib/cx";
-import { Button, buttonClass } from "../../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button, buttonClass } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../../components/Field";
-import { Section, hintClass } from "../../components/Section";
-import { Switch } from "../../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import { pickHistory, playHistory, setIntro, stopHistory, toggleHistory, useTick } from "./shared";
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;

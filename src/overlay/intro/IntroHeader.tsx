@@ -4,11 +4,11 @@
  */
 import { motion } from "motion/react";
 import type { Race } from "../../lib/model";
-import { GRADE_COLOR } from "../../lib/colors";
+import { GRADE_COLOR } from "@otamasing/broadcast-shared/lib/colors";
 import { gradeLabel } from "../../lib/labels";
-import { cx } from "../../lib/cx";
-import { Logo } from "../../components/Logo";
-import { FitText } from "../../components/FitText";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Logo } from "@otamasing/broadcast-shared/components/Logo";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
 import { pill } from "../RaceBackdrop";
 import { useLeaving } from "../leaving";
 

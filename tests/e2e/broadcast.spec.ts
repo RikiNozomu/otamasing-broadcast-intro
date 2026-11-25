@@ -53,9 +53,20 @@ test("edits in the dock reach the STARTING GATE: horse name, flags, toggles", as
   await dock.getByLabel("ค้นหาประเทศ").fill("nzl");
   await dock.getByRole("option", { name: /นิวซีแลนด์/ }).click();
   await expect(row.locator("[data-testid=horse] img")).toHaveAttribute("alt", "NZ");
+  // the JRA training centres are offered for the horse flag, drawn as a pill badge
+  await dock.getByRole("button", { name: "ธงม้าเบอร์ 1: นิวซีแลนด์" }).click();
+  await dock.getByLabel("ค้นหาประเทศ").fill("ritto");
+  await dock.getByRole("option", { name: /ริตโต/ }).click();
+  await expect(row.locator("[data-testid=horse] [data-center]")).toHaveAttribute("data-center", "RITTO");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
+  // Hong Kong draw: white box, dark green number in IBM Plex Sans
+  await dock.getByLabel("สีช่อง DRAW").selectOption("hk");
+  await expect(row.getByTestId("gate")).toHaveCSS("color", "rgb(19, 91, 51)");
+  await expect(row.getByTestId("gate")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(row.getByTestId("gate")).toHaveCSS("font-family", /IBM Plex Sans/);
+  await expect(row.getByTestId("number")).toHaveCSS("font-family", /IBM Plex Sans/);
   await dock.getByTestId("show-horseFlag").click();
-  await expect(row.locator("[data-testid=horse] img")).toHaveCount(0);
+  await expect(row.locator("[data-testid=horse] [data-center]")).toHaveCount(0);
 });
 
 test("import JSON (append / replace), reject a bad file, delete with confirm", async ({ context }) => {

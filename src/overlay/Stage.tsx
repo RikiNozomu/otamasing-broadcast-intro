@@ -1,6 +1,6 @@
 /** A 1920x1080 stage scaled to the width of its parent box (the Browser Source, the landing preview, the dock preview). */
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 
 export function Stage({ children, className }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);

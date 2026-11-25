@@ -7,8 +7,8 @@ import type { PhotoSet } from "../lib/model";
 import { useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { useShownIndex } from "../lib/photos";
-import { cx } from "../lib/cx";
-import { Logo } from "../components/Logo";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Logo } from "@otamasing/broadcast-shared/components/Logo";
 
 export const pill = "inline-flex items-center justify-center whitespace-nowrap rounded-full font-display font-bold leading-none [text-shadow:none]";
 

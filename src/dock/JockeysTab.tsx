@@ -9,11 +9,11 @@ import type { Jockey } from "../lib/introSchema";
 import { update, useData } from "../lib/store";
 import { useImage } from "../lib/images";
 import { dropUnused, storeImage } from "../lib/imageStore";
-import { cx } from "../lib/cx";
-import { Button, buttonClass } from "../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button, buttonClass } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
-import { Section, hintClass } from "../components/Section";
-import { Flag } from "../components/Flag";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
 import { FlagPicker } from "./FlagPicker";
 
 const updateJockey = (id: string, fn: (j: Jockey) => Jockey) => update((d) => ({ ...d, jockeys: d.jockeys.map((j) => (j.id === id ? fn(j) : j)) }));
