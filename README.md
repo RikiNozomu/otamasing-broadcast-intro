@@ -51,4 +51,4 @@ Stack: Vite + React + TypeScript, [Tailwind CSS v4](https://tailwindcss.com), [M
 
 - รูปสนาม: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors (ODbL) ตัวเลขสนาม (ความยาวรอบ ทางตรง ความชัน) และสถิติ: JRA (Tokyo, Nakayama, Kyoto, Hanshin, Chukyo) และ [keiba.go.jp](https://www.keiba.go.jp/guide/course/) (Ohi, Kawasaki, Funabashi, Urawa, Morioka, Kanazawa) ความสูงต่ำตลอดลู่: แผนภาพ Course Undulation ของ [JRA](https://japanracing.jp/en/racing/go_racing/jra_racecourses/course_details/kyoto.html) สนาม NAR เป็นพื้นราบ ยกเว้น Morioka ที่ไม่มีแผนภาพทางการ จึงใช้ค่าประมาณจากคำอธิบายของ keiba.go.jp (เนินสูงราว 4.4 ม.)
 - เส้นโลก: [Natural Earth](https://www.naturalearthdata.com) (public domain)
-- ฟอนต์ Otamasing Display / Otamasing Sans (OFL) อยู่ใน `public/fonts` ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)
+- ฟอนต์ Otamasing Display / Otamasing Sans (OFL), โลโก้, วิดีโอฉากหลัง, ไอคอนสภาพอากาศ, ธง และสีเบอร์/ซอง มาจากแพ็กเกจกลาง [otamasing-broadcast-shared](https://github.com/RikiNozomu/otamasing-broadcast-shared) ธงจาก [flag-icons](https://github.com/lipis/flag-icons) (MIT)

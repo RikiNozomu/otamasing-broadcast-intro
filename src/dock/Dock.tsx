@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { parseActive } from "../lib/model";
 import { useData } from "../lib/store";
 import { renameOldImages } from "../lib/imageStore";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 import { EditTab } from "./EditTab";
 import { RacesTab } from "./RacesTab";
 import { HorsesTab } from "./HorsesTab";

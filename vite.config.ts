@@ -9,5 +9,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   // flag SVGs stay separate files (loaded only when used) instead of being inlined into the JS bundle
   build: { assetsInlineLimit: 0 },
-  test: { include: ["tests/unit/**/*.test.ts"], environment: "node" },
+  // the shared package is TypeScript source with asset imports: Vite compiles it like the app's own files
+  optimizeDeps: { exclude: ["@otamasing/broadcast-shared"] },
+  test: { include: ["tests/unit/**/*.test.ts"], environment: "node", server: { deps: { inline: ["@otamasing/broadcast-shared"] } } },
 });

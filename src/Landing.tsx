@@ -1,5 +1,5 @@
 /** Landing page (#/): what the two URLs are for, with a live preview. */
-import { Section, hintClass } from "./components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { LiveScene } from "./overlay/LiveScene";
 import { Stage } from "./overlay/Stage";
 

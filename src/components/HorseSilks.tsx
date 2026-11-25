@@ -2,7 +2,7 @@
 import { silksModeOf, type Horse } from "../lib/horses";
 import { useImage } from "../lib/images";
 import { useData } from "../lib/store";
-import { cx } from "../lib/cx";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
 import { SilksSvg } from "./SilksSvg";
 
 export function HorseSilks({ horse, className }: { horse: Horse | undefined; className?: string }) {

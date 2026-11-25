@@ -7,13 +7,13 @@
 import { AnimatePresence, motion } from "motion/react";
 import { lazy, Suspense, type CSSProperties } from "react";
 import type { Race, Runner } from "../../lib/model";
-import { boxColors, drawOf, boxExtra, numberFont } from "../../lib/colors";
+import { boxColors, drawOf, boxExtra, numberFont } from "@otamasing/broadcast-shared/lib/colors";
 import { gridPage, horseFor, stallOf } from "../../lib/intro";
 import { courseOf } from "../../lib/venues";
 import { useData } from "../../lib/store";
-import { cx } from "../../lib/cx";
-import { Flag } from "../../components/Flag";
-import { FitText } from "../../components/FitText";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
+import { FitText } from "@otamasing/broadcast-shared/components/FitText";
 import { HorseSilks, hasSilks } from "../../components/HorseSilks";
 import { PageCount, RacePhoto } from "../RaceBackdrop";
 import { useLeaving } from "../leaving";

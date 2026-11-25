@@ -10,8 +10,8 @@ import { IntroSchema, JockeySchema, WEATHER_KEYS, type Intro, type Jockey } from
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
 
-export const SCHEMES = ["jra", "us", "hk", "gb", "fr", "plain", "custom"] as const;
-export type Scheme = (typeof SCHEMES)[number];
+import { SCHEMES, type Scheme } from "@otamasing/broadcast-shared/data";
+export { SCHEMES, type Scheme };
 /** "stripes" = the F1-style sweep of slanted bands (the default here); the others come from the compact site. */
 export const TRANSITIONS = ["stripes", "wipe", "slide", "fade", "none"] as const;
 export type Transition = (typeof TRANSITIONS)[number];

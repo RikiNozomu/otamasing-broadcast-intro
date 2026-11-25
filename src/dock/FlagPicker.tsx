@@ -2,9 +2,9 @@
 import { motion } from "motion/react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { CENTERS, NATIONS, nationCode, nationName } from "../lib/nations";
-import { cx } from "../lib/cx";
-import { Flag } from "../components/Flag";
+import { CENTERS, NATIONS, nationCode, nationName } from "@otamasing/broadcast-shared/lib/nations";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
 import { inputClass } from "../components/Field";
 
 /** `centers`: also offer the MIHO / RITTO badges (horse flag only). */

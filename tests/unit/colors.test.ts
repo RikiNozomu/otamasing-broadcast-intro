@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bracket, boxColors, FR_NO, GB_NO, HK, JRA, US, YELLOW_DRAW } from "../../src/lib/colors";
+import { bracket, boxColors, FR_NO, GB_NO, HK, JRA, US, YELLOW_DRAW } from "@otamasing/broadcast-shared/lib/colors";
 import { gradeLabel } from "../../src/lib/labels";
 import { newStyle } from "../../src/lib/model";
 

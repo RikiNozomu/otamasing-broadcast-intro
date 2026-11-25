@@ -11,12 +11,9 @@ const date = z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "วันที�
 export const FOCUS = ["none", "straights", "corners", "home", "back", "c1", "c2", "c3", "c4"] as const;
 export type Focus = (typeof FOCUS)[number];
 
-/** Weather icons and words (WMO codes from the forecast are mapped to these). */
-export const WEATHERS = {
-  sunny: "Sunny", partly: "Partly Cloudy", cloudy: "Cloudy", fog: "Fog", drizzle: "Drizzle", rain: "Rain", snow: "Snow", storm: "Thunderstorm",
-} as const;
-export type Weather = keyof typeof WEATHERS;
-export const WEATHER_KEYS = Object.keys(WEATHERS) as [Weather, ...Weather[]];
+/** Weather words (WMO codes from the forecast are mapped to these), shared with compact. */
+import { WEATHERS, WEATHER_KEYS, type Weather } from "@otamasing/broadcast-shared/data";
+export { WEATHERS, WEATHER_KEYS, type Weather };
 
 /** Track conditions in JRA's English words (turf / dirt). */
 export const GOINGS = {

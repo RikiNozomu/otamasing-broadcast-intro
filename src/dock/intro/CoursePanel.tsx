@@ -5,10 +5,10 @@ import { FOCUS, GOINGS, WEATHERS, type Focus, type RaceRecord, type Weather } fr
 import { courseFacts, courseOf, VENUES } from "../../lib/venues";
 import { fetchForecast } from "../../lib/intro";
 import { update, updateRace, useData } from "../../lib/store";
-import { Button } from "../../components/Button";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../../components/Field";
-import { Section, hintClass } from "../../components/Section";
-import { Switch } from "../../components/Switch";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
+import { Switch } from "@otamasing/broadcast-shared/components/Switch";
 import { FOCUS_LABEL, setIntro } from "./shared";
 
 function RecordEditor({ race, which, title }: { race: Race; which: "course" | "race"; title: string }) {

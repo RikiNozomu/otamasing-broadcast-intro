@@ -5,10 +5,10 @@
 import { introOf, type Race } from "../../lib/model";
 import { horseFor, introRunners, jockeyFor, pedigreeLines, setRunnerAuto, showRunner, stallOf, useIntroRunner } from "../../lib/intro";
 import { update, updateRace, useData } from "../../lib/store";
-import { cx } from "../../lib/cx";
-import { Button } from "../../components/Button";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../../components/Field";
-import { Section, hintClass } from "../../components/Section";
+import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
 import { RunnerStepper } from "./QuickIntro";
 
 export function RunnerPanel({ race }: { race: Race }) {

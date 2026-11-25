@@ -8,13 +8,13 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Race } from "../../lib/model";
 import { courseFacts, courseOf, type Track, type Venue } from "../../lib/venues";
 import { GOINGS, WEATHERS, type RaceRecord } from "../../lib/introSchema";
-import { cx } from "../../lib/cx";
-import { Flag } from "../../components/Flag";
+import { cx } from "@otamasing/broadcast-shared/lib/cx";
+import { Flag } from "@otamasing/broadcast-shared/components/Flag";
 import { useLeaving } from "../leaving";
 import { BACKDROP_SKIP, CourseView3D, loadWorld, type World } from "./course3d";
 import { EASE, IntroHeader, slant } from "./IntroHeader";
 import { HistoryModal } from "./HistoryModal";
-import { WeatherLogo } from "../../components/WeatherLogo";
+import { WeatherLogo } from "@otamasing/broadcast-shared/components/WeatherLogo";
 
 const regionName = (code: string) => {
   try { return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code; } catch { return code; }
