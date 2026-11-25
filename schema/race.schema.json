@@ -824,12 +824,24 @@
                     "horseCountry": {
                       "anyOf": [
                         {
-                          "type": "string",
-                          "pattern": "^[A-Z]{2}$"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}$"
+                            },
+                            {
+                              "type": "string",
+                              "const": ""
+                            }
+                          ]
                         },
                         {
                           "type": "string",
-                          "const": ""
+                          "const": "MIHO"
+                        },
+                        {
+                          "type": "string",
+                          "const": "RITTO"
                         }
                       ],
                       "default": ""

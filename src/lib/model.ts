@@ -38,7 +38,7 @@ export const RunnerSchema = z.object({
   draw: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
   name: z.string().default(""),
   jockey: z.string().default(""),
-  horseCountry: country.default(""),
+  horseCountry: z.union([country, z.literal("MIHO"), z.literal("RITTO")]).default(""),
   jockeyCountry: country.default(""),
   fav: z.number().int().min(1).max(MAX_RUNNERS).nullable().default(null),
   /** The horse's body weight in kg (e.g. 486) and its change since the last race (e.g. +4), shown on the racecard. */

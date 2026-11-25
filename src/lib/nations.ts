@@ -7,5 +7,14 @@ export const NATIONS: readonly (readonly [string, string, string])[] = [
   ["DO", "DOM", "โดมินิกัน"], ["CA", "CAN", "แคนาดา"], ["AE", "UAE", "สหรัฐอาหรับเอมิเรตส์"], ["MX", "MEX", "เม็กซิโก"],
   ["ZA", "RSA", "แอฟริกาใต้"], ["CL", "CHI", "ชิลี"], ["PE", "PER", "เปรู"], ["TH", "THA", "ไทย"],
 ];
-export const nationName = (c: string) => (c ? NATIONS.find((n) => n[0] === c)?.[2] ?? c : "ไม่ใส่ธง");
-export const nationCode = (c: string) => NATIONS.find((n) => n[0] === c)?.[1] ?? c;
+/**
+ * Special horse "flags" for Japanese horses: the JRA training centre the horse is stabled at, drawn as a pill
+ * badge instead of a flag (Figma "Trainer" component): MIHO red, RITTO blue. Only the horse flag offers them.
+ */
+export const CENTERS: readonly (readonly [string, string, string])[] = [
+  ["MIHO", "MIHO", "มิโฮะ (Miho)"], ["RITTO", "RITTO", "ริตโต (Ritto)"],
+];
+export const CENTER_COLOR: Record<string, string> = { MIHO: "#CD0202", RITTO: "#00157D" };
+const ALL = [...NATIONS, ...CENTERS];
+export const nationName = (c: string) => (c ? ALL.find((n) => n[0] === c)?.[2] ?? c : "ไม่ใส่ธง");
+export const nationCode = (c: string) => ALL.find((n) => n[0] === c)?.[1] ?? c;

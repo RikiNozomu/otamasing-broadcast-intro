@@ -117,7 +117,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
                 <div className={cx(runnerGrid, "border-b border-line pb-1.5")} key={h.number}>
                   <span className="bg-navy py-[3px] text-center font-display text-[15px] font-bold">{h.number}</span>
                   <input className={inputClass} aria-label={`ชื่อม้าเบอร์ ${h.number}`} value={h.name} onChange={(e) => setRunner(i, { name: e.target.value })} />
-                  <FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} onChange={(c) => setRunner(i, { horseCountry: c })} />
+                  <FlagPicker label={`ธงม้าเบอร์ ${h.number}`} value={h.horseCountry} centers onChange={(c) => setRunner(i, { horseCountry: c })} />
                   <span />
                   <input type="checkbox" className="justify-self-center" aria-label={`ถอนเบอร์ ${h.number}`} checked={h.scratched} onChange={(e) => setRunner(i, { scratched: e.target.checked })} />
                   {S.autoDraw ? <span /> : <input className={cx(inputClass, "px-0.5 text-center")} type="number" min={1} max={MAX_RUNNERS} aria-label={`ซองเบอร์ ${h.number}`} title="ซอง" placeholder="ซอง" value={h.draw ?? ""} onChange={(e) => setRunner(i, { draw: e.target.value ? Math.round(+e.target.value) : null })} />}
