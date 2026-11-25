@@ -10,7 +10,7 @@ import { IntroSchema, JockeySchema, type Intro, type Jockey } from "./introSchem
 export const MAX_RUNNERS = 30;
 export const MIN_RUNNERS = 2;
 
-export const SCHEMES = ["jra", "us", "plain", "custom"] as const;
+export const SCHEMES = ["jra", "us", "hk", "gb", "fr", "plain", "custom"] as const;
 export type Scheme = (typeof SCHEMES)[number];
 /** "stripes" = the F1-style sweep of slanted bands (the default here); the others come from the compact site. */
 export const TRANSITIONS = ["stripes", "wipe", "slide", "fade", "none"] as const;

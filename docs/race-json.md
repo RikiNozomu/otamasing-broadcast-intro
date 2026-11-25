@@ -127,8 +127,8 @@
 
 | ช่อง | ค่า | ค่าเริ่มต้น | ความหมาย |
 | --- | --- | --- | --- |
-| `drawScheme` | `"jra"` `"us"` `"plain"` `"custom"` | `"jra"` | สีช่อง DRAW: JRA 8 สี, saddle towel อเมริกา, กรอบขาว, กำหนดเอง |
-| `numberScheme` | เหมือนด้านบน | `"plain"` | สีช่อง NO. (`"jra"` = สีตามซองของม้า) |
+| `drawScheme` | `"jra"` `"us"` `"hk"` `"gb"` `"fr"` `"plain"` `"custom"` | `"jra"` | สีช่อง DRAW: JRA 8 สี, saddle towel อเมริกา, ฮ่องกง (กล่องขาว ตัวเลขเขียว ฟอนต์ IBM Plex Sans), อังกฤษ / ฝรั่งเศส (เหลือง ตัวเลขดำ), กรอบขาว, กำหนดเอง |
+| `numberScheme` | เหมือนด้านบน | `"plain"` | สีช่อง NO. (`"jra"` = สีตามซองของม้า, `"gb"` = น้ำเงินกรอบขาว, `"fr"` = แดงกรอบขาว) |
 | `autoDraw` | boolean | `true` | คิดซองให้จากเบอร์ตามกฎ JRA (เกิน 8 ตัว ม้าที่เกินไปอยู่ซองท้ายๆ ก่อน) |
 | `gradeStyle` | `"jra"` `"intl"` | `"jra"` | ป้ายเกรดแบบ GI/GII/GIII/LR หรือ G1/G2/G3/L |
 | `show` | object ของ boolean | ทุกช่อง `true` | เว็บนี้ใช้ `grade` (ป้ายเกรด), `horseFlag`, `jockeyFlag` (ธง) ส่วน `draw`, `class`, `fav`, `horseWeight`, `weight` เป็นของการ์ดใน compact **(compact)** (คอลัมน์ของ STARTING GATE เปิดปิดที่ `intro.grid.show`) (`jpName` ยังรับได้แต่ไม่มีผล) |

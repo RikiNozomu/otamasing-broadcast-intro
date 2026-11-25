@@ -124,6 +124,9 @@
                     "enum": [
                       "jra",
                       "us",
+                      "hk",
+                      "gb",
+                      "fr",
                       "plain",
                       "custom"
                     ],
@@ -134,6 +137,9 @@
                     "enum": [
                       "jra",
                       "us",
+                      "hk",
+                      "gb",
+                      "fr",
                       "plain",
                       "custom"
                     ],

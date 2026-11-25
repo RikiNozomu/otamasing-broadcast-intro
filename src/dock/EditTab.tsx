@@ -23,8 +23,8 @@ import { GatePanel } from "./intro/GatePanel";
 type Sub = "data" | "style" | "course" | "history" | "runner" | "grid";
 const INTRO_SUBS: Sub[] = ["course", "history", "runner", "grid"];
 
-const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
-const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า" };
+const SCHEME_LABEL: Record<Scheme, string> = { jra: "JRA 8 สีตามซอง", us: "อเมริกา (Saddle towel)", hk: "ฮ่องกง (ขาว ตัวเลขเขียว)", gb: "อังกฤษ (เหลือง)", fr: "ฝรั่งเศส (เหลือง)", plain: "ไม่มีสี (กรอบขาว)", custom: "Custom" };
+const NO_SCHEME_LABEL: Record<Scheme, string> = { ...SCHEME_LABEL, jra: "JRA ตามซองของม้า", gb: "อังกฤษ (น้ำเงิน)", fr: "ฝรั่งเศส (แดง)" };
 
 export function EditTab({ editing, setEditing }: { editing: string | null; setEditing: (id: string) => void }) {
   const d = useData();
@@ -149,7 +149,7 @@ export function EditTab({ editing, setEditing }: { editing: string | null; setEd
           </Section>
           <Section title="สีช่อง NO. (เบอร์)">
             <select aria-label="สีช่อง NO." className={inputClass} value={S.numberScheme} onChange={(e) => setStyle((s) => ({ ...s, numberScheme: e.target.value as Scheme }))}>
-              {(["plain", "jra", "us", "custom"] as Scheme[]).map((k) => <option key={k} value={k}>{NO_SCHEME_LABEL[k]}</option>)}
+              {(["plain", "jra", "us", "gb", "fr", "custom"] as Scheme[]).map((k) => <option key={k} value={k}>{NO_SCHEME_LABEL[k]}</option>)}
             </select>
           </Section>
           {showCustom && (

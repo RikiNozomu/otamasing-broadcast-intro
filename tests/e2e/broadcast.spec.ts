@@ -59,6 +59,11 @@ test("edits in the dock reach the STARTING GATE: horse name, flags, toggles", as
   await dock.getByRole("option", { name: /ริตโต/ }).click();
   await expect(row.locator("[data-testid=horse] [data-center]")).toHaveAttribute("data-center", "RITTO");
   await dock.getByRole("tab", { name: "สไตล์" }).click();
+  // Hong Kong draw: white box, dark green number in IBM Plex Sans
+  await dock.getByLabel("สีช่อง DRAW").selectOption("hk");
+  await expect(row.getByTestId("gate")).toHaveCSS("color", "rgb(19, 91, 51)");
+  await expect(row.getByTestId("gate")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(row.getByTestId("gate")).toHaveCSS("font-family", /IBM Plex Sans/);
   await dock.getByTestId("show-horseFlag").click();
   await expect(row.locator("[data-testid=horse] [data-center]")).toHaveCount(0);
 });

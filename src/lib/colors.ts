@@ -18,6 +18,16 @@ export const US: Record<number, Pair> = {
   17: ["#101B2D", "#FFFFFF"], 18: ["#102214", "#FFED0D"], 19: ["#10137E", "#E23419"], 20: ["#E46FA3", "#FFED0D"],
   21: ["#B5B3DB", "#0F147C"], 22: ["#21446A", "#FFFFFF"], 23: ["#C4D8CF", "#000000"], 24: ["#3F4A2A", "#FFFFFF"],
 };
+/** Hong Kong draw (barrier) box: white with the number in dark green, the same for every draw, in IBM Plex Sans (HK_FONT). */
+export const HK: Pair = ["#FFFFFF", "#135B33"];
+export const HK_FONT = '"IBM Plex Sans", system-ui, sans-serif';
+/** Britain: NO. dark navy, France: NO. red, both with a white frame; the draw is yellow with a black number in both. */
+export const GB_NO: Pair = ["#0B0069", "#FFFFFF"];
+export const FR_NO: Pair = ["#C00F0C", "#FFFFFF"];
+export const YELLOW_DRAW: Pair = ["#FFED0D", "#000000"];
+/** Extra style of a box in these colours: the Hong Kong draw number in IBM Plex Sans, a white frame on the British / French NO. */
+export const boxExtra = (c: readonly [string, string] | null) =>
+  c === HK ? { fontFamily: HK_FONT } : c === GB_NO || c === FR_NO ? { boxShadow: "inset 0 0 0 3px #fff" } : undefined;
 const FALLBACK: Pair = ["#5A5F8C", "#FFFFFF"];
 
 /**
@@ -45,6 +55,12 @@ export function boxColors(scheme: Scheme, value: number, horseNo: number, n: num
       return JRA[isNumberBox ? bracket(horseNo, n) : Math.min(Math.max(value, 1), 8)];
     case "us":
       return US[value] ?? customPair(s, value);
+    case "hk":
+      return HK;
+    case "gb":
+      return isNumberBox ? GB_NO : YELLOW_DRAW;
+    case "fr":
+      return isNumberBox ? FR_NO : YELLOW_DRAW;
     case "custom":
       return customPair(s, value);
     default:
