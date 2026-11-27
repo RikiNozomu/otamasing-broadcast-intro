@@ -14,7 +14,7 @@
     "schema": "node --experimental-strip-types scripts/build-schema.ts"
   },
   "dependencies": {
-    "@otamasing/broadcast-shared": "github:RikiNozomu/otamasing-broadcast-shared#87aa320ffeebc1fb94f4fc56f466fd8fe20eccfb",
+    "@otamasing/broadcast-shared": "github:RikiNozomu/otamasing-broadcast-shared#ee3fabd8e3d4db3caf0ec92ae61c8acd88decd90",
     "fflate": "0.8.2",
     "flag-icons": "7.2.3",
     "motion": "14.4.0",
