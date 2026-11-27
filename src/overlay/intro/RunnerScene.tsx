@@ -71,7 +71,7 @@ function JockeyPhoto({ name, horse }: { name: string; horse: Horse | undefined }
   const j = jockeyFor(d, name);
   const url = useImage(j?.photo ?? "", j?.photo ? d.images[j.photo] : undefined);
   if (url) return <img data-testid="jockey-photo" src={url} alt="" className="h-full w-full object-contain object-bottom drop-shadow-[0_18px_40px_rgb(0_0_0/.55)]" />;
-  if (!hasSilks(horse, d.images)) return null;
+  if (!hasSilks(horse)) return null;
   return (
     <div className="absolute inset-x-0 bottom-[70px] grid place-items-center" data-testid="jockey-silks">
       <HorseSilks horse={horse} className="h-[330px] w-[440px] drop-shadow-[0_18px_40px_rgb(0_0_0/.5)]" />

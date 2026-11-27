@@ -54,32 +54,6 @@ export const CareerRaceSchema = z.object({
 });
 export type CareerRace = z.infer<typeof CareerRaceSchema>;
 
-const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "สีต้องเป็น #RRGGBB");
-/** Patterns of the owner's silks drawn by the app (body and sleeves). */
-/**
- * Body patterns, from the JRA list (netkeiba) and the US / European names (Breeders' Cup):
- * hoops 一本輪 二本輪 三本輪, belt 帯, sash 襷, crossbelts, stripes 縦縞, seams, braces, halves, quartered,
- * check 格子, harlequin 元禄/菱形, diamond band, chevron 山形, large V, sawtooth 鋸歯形, hash 井桁,
- * yoke, spots 銭形, stars 星散, large star, ring 蛇目, large diamond.
- */
-export const SILKS_BODY = ["plain", "hoop1", "hoop2", "hoop3", "belt", "sash", "cross", "stripes", "seams", "braces", "halves", "quartered", "check", "harlequin", "diamondBand", "chevron", "bigV", "sawtooth", "hash", "yoke", "spots", "stars", "star", "ring", "diamond",
-  "jaggedYoke", "zigzag2", "zigzagBand", "rings", "bigCheck", "bigHarlequin", "bigDiamondBand",
-  "disc", "fleurDeLys", "spots3", "triangle", "sashReverse", "blockGrid", "epaulets"] as const;
-/** Sleeve patterns: armlets (one to five), stripes along the arm (two, or four dense ones), a thick zigzag band (with the body's zigzagBand), chevrons, diamonds, check, spots, stars, cuffs, halved (top/bottom). */
-export const SILKS_SLEEVES = ["plain", "hoop1", "hoop2", "hoop3", "stripes", "chevrons", "diamonds", "check", "spots", "stars", "cuffs", "halved",
-  "hoop4", "hoop5", "stripesDense", "zigzagBand", "blocks", "stripe1", "epaulets", "bigHarlequin"] as const;
-/** The owner's silks drawn as an SVG jersey with sleeves: body colour, a pattern in a second colour, sleeves. */
-export const SilksSchema = z.object({
-  body: hex.default("#000000"),
-  pattern: z.enum(SILKS_BODY).default("plain"),
-  accent: hex.default("#E30613"),
-  sleeves: hex.default("#000000"),
-  sleevePattern: z.enum(SILKS_SLEEVES).default("plain"),
-  sleeveAccent: hex.default("#FFE600"),
-  /** A yoke over the shoulders in this colour, drawn on top of the body pattern (e.g. with "triangle"); null = none. */
-  yoke: hex.nullable().optional(),
-});
-export type Silks = z.infer<typeof SilksSchema>;
 
 /** The horse's pictures (names of pictures stored in the browser) and their slideshow; same shape as a race's PhotoSet. */
 export const HorsePhotosSchema = z.object({
@@ -89,10 +63,6 @@ export const HorsePhotosSchema = z.object({
   seconds: z.number().min(1).max(600).default(5),
   since: z.number().default(0),
 });
-
-/** How the owner's silks are shown: an uploaded picture, the pattern drawn by the app, or none. */
-export const SILKS_MODES = ["upload", "pattern", "none"] as const;
-export type SilksMode = (typeof SILKS_MODES)[number];
 
 /** Which page of broadcast compact's horse scene is on screen (kept for compact); the pages take turns with `auto` like the racecard. */
 export const HorseViewSchema = z.object({
@@ -123,12 +93,11 @@ export const HorseSchema = z.object({
   damDam: z.string().default(""),
   owner: z.string().default(""),
   trainer: z.string().default(""),
-  /** The owner's silks drawn by the app (its colours and patterns). */
-  silks: SilksSchema.nullable().default(null),
-  /** Which silks are shown; left out = the drawn pattern when `silks` is set, otherwise none. */
-  silksMode: z.enum(SILKS_MODES).optional(),
-  /** Name of the uploaded silks picture stored in the browser (image/<date-time>.<ext>), or none. */
-  silksImage: z.string().nullable().default(null),
+  /**
+   * The owner's silks: a name from the shared silks list (otamasing-broadcast-shared lib/silks, e.g. "Godolphin"), "" = none.
+   * Older files held drawn silks (an object) or an uploaded picture here; those read as none.
+   */
+  silks: z.preprocess((v) => (typeof v === "string" ? v : ""), z.string()),
   /** The horse's pictures on the left of the scene, taking turns. */
   photos: HorsePhotosSchema.default({}),
   /** Career record: starts and 1st / 2nd / 3rd (4th or worse = the rest). */
