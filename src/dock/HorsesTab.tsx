@@ -5,114 +5,24 @@
  */
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { exportHorse, newId, type AppData } from "../lib/model";
-import { HorseSchema, SilksSchema, SILKS_BODY, SILKS_MODES, SILKS_SLEEVES, silksModeOf, type SilksMode, type Silks, type Horse } from "../lib/horses";
+import { exportHorse, newId } from "../lib/model";
+import { HorseSchema, type Horse } from "../lib/horses";
 import { update, useData } from "../lib/store";
-import { useImage } from "../lib/images";
-import { dropUnused, storeImage } from "../lib/imageStore";
+import { dropUnused } from "../lib/imageStore";
 import { cx } from "@otamasing/broadcast-shared/lib/cx";
-import { Button, buttonClass } from "@otamasing/broadcast-shared/components/Button";
+import { Button } from "@otamasing/broadcast-shared/components/Button";
 import { Field, inputClass } from "../components/Field";
 import { Section, hintClass } from "@otamasing/broadcast-shared/components/Section";
-import { SilksSvg } from "../components/SilksSvg";
+import { SilksPicker } from "@otamasing/broadcast-shared/components/SilksPicker";
 import { ExportPanel } from "./ExportPanel";
 
 const updateHorse = (id: string, fn: (h: Horse) => Horse) => update((d) => ({ ...d, horses: d.horses.map((h) => (h.id === id ? fn(h) : h)) }));
 
-/** One picture (the owner's silks): upload, replace, remove. `value` is the stored picture's name; `onChange` puts a new name (or null) in the data. */
-function PictureField({ value, onChange, label, testId, contain, light }: { value: string | null; onChange: (x: AppData, name: string | null) => AppData; label: string; testId: string; contain?: boolean; light?: boolean }) {
-  const d = useData();
-  const url = useImage(value ?? "", value ? d.images[value] : undefined);
-  const put = async (f: File | undefined) => {
-    if (!f) return;
-    const name = await storeImage(f);
-    update((x) => onChange({ ...x, images: { ...x.images, [name]: Date.now() } }, name));
-    await dropUnused([value]);
-  };
-  const remove = async () => {
-    update((x) => onChange(x, null));
-    await dropUnused([value]);
-  };
-  return (
-    <div className="grid gap-1.5 text-[13px]">
-      <span>{label}</span>
-      <div className={cx("aspect-video border border-line bg-center bg-no-repeat", contain ? "bg-contain" : "bg-cover", light && url ? "bg-white" : "bg-panel")} data-testid={`${testId}-thumb`}
-        style={{ backgroundImage: url ? `url("${url}")` : undefined }}>
-        {!url && <span className="grid h-full place-items-center text-xs text-ink-muted">ยังไม่มีรูป</span>}
-      </div>
-      <span className="flex flex-wrap gap-1.5">
-        <label className={buttonClass("primary")} htmlFor={testId}>{url ? "เปลี่ยนรูป…" : "เลือกรูป…"}</label>
-        <input type="file" id={testId} data-testid={testId} accept="image/*,.svg" hidden onChange={(e) => { put(e.target.files?.[0]).finally(() => { e.target.value = ""; }); }} />
-        {url && <Button onClick={remove}>ลบรูป</Button>}
-      </span>
-    </div>
-  );
-}
-
-const BODY_LABEL: Record<Silks["pattern"], string> = {
-  plain: "Plain", hoop1: "Hoop", hoop2: "Two hoops", hoop3: "Three hoops", belt: "Belt", sash: "Sash", cross: "Crossbelts", stripes: "Stripes",
-  seams: "Seams", braces: "Braces", halves: "Halves", quartered: "Quartered", check: "Check", harlequin: "Harlequin", diamondBand: "Diamonds",
-  chevron: "Chevron", bigV: "Large V", sawtooth: "Zigzag", hash: "Hash", yoke: "Yoke", spots: "Spots", stars: "Stars", star: "Star", ring: "Ring", diamond: "Diamond",
-  jaggedYoke: "Jagged yoke", zigzag2: "Double zigzag", zigzagBand: "Zigzag band", rings: "Rings", bigCheck: "Large check", bigHarlequin: "Large harlequin", bigDiamondBand: "Large diamonds",
-  disc: "Disc (ball)", fleurDeLys: "Fleur-de-lys", spots3: "Three diagonal spots", triangle: "Triangle", sashReverse: "Sash (reversed)", blockGrid: "Block grid", epaulets: "Epaulets",
-};
-const SLEEVE_LABEL: Record<Silks["sleevePattern"], string> = {
-  plain: "Plain", hoop1: "Armlet", hoop2: "Two armlets", hoop3: "Three armlets", stripes: "Stripes", chevrons: "Chevrons",
-  diamonds: "Diamonds", check: "Check", spots: "Spots", stars: "Stars", cuffs: "Cuffs", halved: "Halved",
-  hoop4: "Four armlets", hoop5: "Five armlets", stripesDense: "Fine stripes", zigzagBand: "Zigzag band", blocks: "Blocks", stripe1: "One stripe", epaulets: "Epaulets", bigHarlequin: "Large harlequin",
-};
-
-const MODE_LABEL: Record<SilksMode, string> = { upload: "Upload", pattern: "Pattern", none: "ไม่มี" };
-
-/** The owner's silks: an uploaded picture (PNG or SVG), a pattern drawn as SVG (colours and patterns of the body and sleeves), or none. */
+/** The owner's silks: one picture from the shared silks list (Figma "Silk"), or none. */
 function SilksSection({ h }: { h: Horse }) {
-  const mode = silksModeOf(h);
-  const s = h.silks ?? SilksSchema.parse({});
-  const set = (patch: Partial<Silks>) => updateHorse(h.id, (x) => ({ ...x, silks: { ...(x.silks ?? SilksSchema.parse({})), ...patch } }));
-  const color = (k: "body" | "accent" | "sleeves" | "sleeveAccent", label: string) => (
-    <label className="grid justify-items-center gap-0.5 text-[11px] text-ink-muted">{label}
-      <input type="color" aria-label={`สีเสื้อ ${label}`} className="h-7 w-full cursor-pointer border border-line bg-transparent p-0" value={s[k]} onChange={(e) => set({ [k]: e.target.value.toUpperCase() })} />
-    </label>
-  );
   return (
-    <Section title="สีเสื้อเจ้าของ">
-      <div className="grid grid-cols-3 border border-line" role="radiogroup" aria-label="แบบสีเสื้อ">
-        {SILKS_MODES.map((m) => (
-          <button key={m} type="button" role="radio" aria-checked={mode === m} data-testid={`silks-mode-${m}`}
-            onClick={() => updateHorse(h.id, (x) => ({ ...x, silksMode: m, silks: m === "pattern" ? x.silks ?? SilksSchema.parse({}) : x.silks }))}
-            className={cx("p-[7px] text-[13px]", mode === m ? "bg-yellow font-semibold text-navy" : "bg-studio text-ink-muted")}>{MODE_LABEL[m]}</button>
-        ))}
-      </div>
-      {mode === "upload" && (
-        <>
-          <PictureField value={h.silksImage} onChange={(x, name) => ({ ...x, horses: x.horses.map((y: Horse) => (y.id === h.id ? { ...y, silksImage: name } : y)) })}
-            label="รูปสีเสื้อ (PNG หรือ .svg ทรงเสื้อมีแขน)" testId="silks-file" contain light />
-          <span className={hintClass}>บนจอจะอยู่ในกรอบสีขาว · รูปเก็บในเครื่องนี้ ไฟล์ JSON เก็บแค่ชื่อรูป{h.silksImage ? ` (${h.silksImage})` : ""}</span>
-        </>
-      )}
-      {mode === "pattern" && (
-        <>
-          <div className="grid grid-cols-[120px_minmax(0,1fr)] items-center gap-2">
-            <span className="grid aspect-video place-items-center rounded-[6px] bg-white p-1"><SilksSvg silks={s} className="h-full w-full" /></span>
-            <div className="grid gap-1.5">
-              <select aria-label="ลายตัวเสื้อ" className={inputClass} value={s.pattern} onChange={(e) => set({ pattern: e.target.value as Silks["pattern"] })}>
-                {SILKS_BODY.map((p) => <option key={p} value={p}>ตัว: {BODY_LABEL[p]}</option>)}
-              </select>
-              <select aria-label="ลายแขนเสื้อ" className={inputClass} value={s.sleevePattern} onChange={(e) => set({ sleevePattern: e.target.value as Silks["sleevePattern"] })}>
-                {SILKS_SLEEVES.map((p) => <option key={p} value={p}>แขน: {SLEEVE_LABEL[p]}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-4 gap-1.5">
-            {color("body", "ตัว")}{color("accent", "ลายตัว")}{color("sleeves", "แขน")}{color("sleeveAccent", "ลายแขน")}
-          </div>
-          <div className="flex items-center gap-2 text-[13px]">
-            <label className="flex items-center gap-1.5"><input type="checkbox" aria-label="บ่า (yoke) อีกสี" checked={s.yoke != null} onChange={(e) => set({ yoke: e.target.checked ? "#FFE600" : null })} />บ่า (yoke) อีกสี</label>
-            {s.yoke != null && <input type="color" aria-label="สีเสื้อ บ่า" className="h-7 w-16 cursor-pointer border border-line bg-transparent p-0" value={s.yoke} onChange={(e) => set({ yoke: e.target.value.toUpperCase() })} />}
-          </div>
-          <span className={hintClass}>วาดเป็น SVG · สีและลายอยู่ในไฟล์ JSON ด้วย</span>
-        </>
-      )}
+    <Section title="ลายเสื้อเจ้าของ">
+      <SilksPicker value={h.silks} onChange={(name: string) => updateHorse(h.id, (x) => ({ ...x, silks: name }))} selectClassName={inputClass} />
     </Section>
   );
 }
@@ -152,7 +62,7 @@ export function HorsesTab() {
     </Field>
   );
   const remove = async () => {
-    const keys = [...h.photos.keys, h.silksImage];
+    const keys = h.photos.keys;
     update((x) => ({ ...x, horses: x.horses.filter((y) => y.id !== h.id) }));
     dropUnused(keys);
     setConfirmDel(false);

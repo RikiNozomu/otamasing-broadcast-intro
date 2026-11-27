@@ -10,7 +10,7 @@
  */
 type Holder = {
   races?: { photos: { card: { keys: string[] }; result: { keys: string[] } }; intro?: { history?: { items?: { video?: string | null }[] } } }[];
-  horses?: { photos: { keys: string[] }; silksImage?: string | null }[];
+  horses?: { photos: { keys: string[] } }[];
   jockeys?: { photo?: string | null }[];
   home?: { background?: string | null };
 };
@@ -66,7 +66,6 @@ export function imageRefs(d: Holder): string[] {
   for (const j of d.jockeys ?? []) if (j.photo) out.add(j.photo);
   for (const h of d.horses ?? []) {
     for (const k of h.photos.keys) out.add(k);
-    if (h.silksImage) out.add(h.silksImage);
   }
   if (d.home?.background) out.add(d.home.background);
   return [...out];
@@ -84,7 +83,7 @@ export function mapImageRefs<T extends Holder>(d: T, fn: (k: string) => string |
       ...(r.intro?.history?.items && { intro: { ...r.intro, history: { ...r.intro.history, items: r.intro.history.items.map((h) => ({ ...h, video: one(h.video) })) } } }),
     })) }),
     ...(d.jockeys && { jockeys: d.jockeys.map((j) => ({ ...j, photo: one(j.photo) })) }),
-    ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys) }, ...("silksImage" in h && { silksImage: one(h.silksImage) }) })) }),
+    ...(d.horses && { horses: d.horses.map((h) => ({ ...h, photos: { ...h.photos, keys: keys(h.photos.keys) } })) }),
     ...(d.home && { home: { ...d.home, ...("background" in d.home && { background: one(d.home.background) }) } }),
   };
 }

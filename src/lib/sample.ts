@@ -2,7 +2,7 @@
 import { newHorseSettings, newHorseView, type Horse } from "./horses";
 import { introOf, newPhotos, newCard, newResult, newStyle, type AppData, type Race, type Runner } from "./model";
 import { newIntro, type Intro } from "./introSchema";
-import { SILKS_BODY, SILKS_SLEEVES } from "./horseSchema";
+import { SILKS } from "@otamasing/broadcast-shared/lib/silks";
 
 const NAMES = ["Morning Gallop", "Silver Paddock", "Northern Lantern", "Checkered Flag", "Royal Furlong", "Paper Owner", "Gate Seven", "Blue Silks", "Final Furlong", "Yellow Draw", "Navy Plate", "Turf Comet", "Night Rally", "Rising Second", "Cream Headline", "Long Stretch", "Photo Finish", "Last Corner"];
 const JOCKEYS: [string, string][] = [["A. Sample", "JP"], ["B. Example", "JP"], ["C. Rider", "FR"], ["D. Jockey", "JP"], ["E. Saddle", "IT"], ["F. Whip", "JP"], ["G. Stirrup", "GB"], ["H. Reins", "JP"], ["I. Crop", "JP"], ["J. Girth", "IE"], ["K. Bridle", "JP"], ["L. Bit", "JP"], ["M. Halter", "DE"], ["N. Tack", "JP"], ["O. Visor", "JP"], ["P. Blinker", "JP"], ["Q. Hood", "FR"], ["R. Shoe", "JP"]];
@@ -53,16 +53,14 @@ export function sampleIntro(): Intro {
 const SIRES = ["Example Sire", "Model Stallion", "Grand Example", "Northern Sample", "Paper Emperor", "Silver Template"];
 const DAMS = ["Paper Princess", "Sample Lady", "Demo Mare", "Model Queen", "Test Beauty", "Draft Dancer", "Mock Rose", "Proof Belle", "Spare Duchess"];
 const BMS = ["Old Champion", "Classic Sample", "Retired Model", "Former Example", "Legacy Paper"];
-const COLOURS = ["#0A056B", "#E30613", "#FFE600", "#FFFFFF", "#00843D", "#000000", "#F28C00", "#7A2E8C", "#5BC2E7", "#C8102E"];
 
 /** A made-up horse-tab entry for each sample runner: pedigree and silks for the runner intro. */
 export function sampleRunnerHorse(name: string, i: number): Horse {
-  const c = (k: number) => COLOURS[(i * 3 + k) % COLOURS.length];
   return {
     id: `sample-runner-${i + 1}`, name, trainedIn: "JP", bornIn: "JP", foaled: `202${1 + (i % 3)}-04-0${1 + (i % 9)}`, coat: null, sex: i % 4 === 3 ? "F" : "M",
     sire: SIRES[i % SIRES.length], dam: DAMS[i % DAMS.length], bms: BMS[i % BMS.length], sireSire: "", sireDam: "", damDam: "", owner: "", trainer: "",
-    silksMode: "pattern", silksImage: null, photos: { keys: [], index: 0, auto: false, seconds: 5, since: 0 },
-    silks: { body: c(0), pattern: SILKS_BODY[(i * 5) % 12], accent: c(1), sleeves: c(2), sleevePattern: SILKS_SLEEVES[(i * 7) % 8], sleeveAccent: c(1) },
+    photos: { keys: [], index: 0, auto: false, seconds: 5, since: 0 },
+    silks: SILKS[(i * 7) % SILKS.length][0],
     record: { starts: 0, first: 0, second: 0, third: 0 }, earnings: null, currency: "JPY", races: [], view: newHorseView(),
   };
 }

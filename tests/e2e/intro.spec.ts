@@ -333,6 +333,8 @@ test("jockeys tab: add the riders from the race card; a cut-out photo stands on 
   // a jockey without a photo: the owner's silks stand in
   await dock.getByTestId("quick-runner").getByRole("button", { name: "ม้าตัวถัดไป" }).click();
   await expect(live(overlay).locator("[data-testid=runner][data-no='2'] [data-testid=jockey-silks]")).toBeVisible();
+  // the silks picture comes from the shared silks list
+  await expect(live(overlay).locator("[data-testid=runner][data-no='2'] [data-testid=jockey-silks] img")).toHaveAttribute("data-silks", /.+/);
 });
 
 test("stripes: the old scene plays its exit, then slanted bands sweep the new one in", async ({ context }) => {

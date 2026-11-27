@@ -26,15 +26,13 @@ describe("picture names", () => {
     d.races[0].photos.card.keys = ["image/1.png", "image/2.png"];
     d.races[1].photos.result.keys = ["image/2.png"];
     d.horses[0].photos.keys = ["image/3.png"];
-    d.horses[0].silksImage = "image/4.svg";
     d.home.background = "image/5.jpg";
-    expect(imageRefs(d).sort()).toEqual(["image/1.png", "image/2.png", "image/3.png", "image/4.svg", "image/5.jpg"]);
+    expect(imageRefs(d).sort()).toEqual(["image/1.png", "image/2.png", "image/3.png", "image/5.jpg"]);
     const gone = new Set(["image/2.png", "image/4.svg", "image/5.jpg"]);
     const next = mapImageRefs(d, (k) => (gone.has(k) ? null : k));
     expect(next.races[0].photos.card.keys).toEqual(["image/1.png"]);
     expect(next.races[1].photos.result.keys).toEqual([]);
     expect(next.horses[0].photos.keys).toEqual(["image/3.png"]);
-    expect(next.horses[0].silksImage).toBeNull();
     expect(next.home.background).toBeNull();
     expect(d.home.background).toBe("image/5.jpg");
   });

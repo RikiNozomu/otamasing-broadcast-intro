@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { silksModeOf, HorseSchema, type Horse } from "../../src/lib/horses";
+import { HorseSchema, type Horse } from "../../src/lib/horses";
 import { activeExists, exportHorse, mergeImport, parseActive, parseFile } from "../../src/lib/model";
 import { sampleData } from "../../src/lib/sample";
 
@@ -7,10 +7,10 @@ const horse = (o: Record<string, unknown> = {}): Horse => ({ ...HorseSchema.pars
 const race = (date: string, finish: number | null, extra = {}) => ({ date, name: `R ${date}`, finish, ...extra });
 
 describe("horses", () => {
-  it("silks mode: the drawn pattern when silks are set, unless chosen", () => {
-    expect(silksModeOf(horse())).toBe("none");
-    expect(silksModeOf(horse({ silks: {} }))).toBe("pattern");
-    expect(silksModeOf(horse({ silks: {}, silksMode: "upload" }))).toBe("upload");
+  it("silks: a name from the shared list; drawn silks (an object) from older files read as none", () => {
+    expect(horse().silks).toBe("");
+    expect(horse({ silks: "Godolphin" }).silks).toBe("Godolphin");
+    expect(horse({ silks: { body: "#000000", pattern: "cross" }, silksMode: "pattern" }).silks).toBe("");
   });
   it("a horse's whole profile (facts, career, prize money) is kept for broadcast compact", () => {
     const h = horse({ owner: "O", earnings: 5, currency: "USD", races: [race("2026-01-01", 1, { field: 18 })], record: { starts: 1, first: 1, second: 0, third: 0 } });
