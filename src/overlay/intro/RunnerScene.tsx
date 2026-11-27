@@ -7,7 +7,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { Race, Runner } from "../../lib/model";
 import type { Horse } from "../../lib/horses";
-import { boxColors } from "@otamasing/broadcast-shared/lib/colors";
+import { boxColors, numberFont } from "@otamasing/broadcast-shared/lib/colors";
 import { horseFor, jockeyFor, pedigreeLines, stallOf, useIntroRunner } from "../../lib/intro";
 import { useImage } from "../../lib/images";
 import { useData } from "../../lib/store";
@@ -116,7 +116,7 @@ function RunnerInfo({ race, h, leaving }: { race: Race; h: Runner; leaving: bool
       {/* bottom: number box, silks, horse name */}
       <div className="absolute right-[560px] bottom-0 left-0 flex items-center gap-6 pl-[50px] overflow-hidden" style={{ top: LINE_Y }}>
         <motion.span data-testid="number" className="grid h-[118px] w-[132px] flex-none place-items-center rounded-b-[34px] font-display text-[92px] leading-none font-bold"
-          style={{ background: num[0], color: num[1], boxShadow: num[0].toUpperCase() === "#FFFFFF" ? "inset 0 0 0 4px #0A056B" : undefined }}
+          style={{ ...numberFont, background: num[0], color: num[1], boxShadow: num[0].toUpperCase() === "#FFFFFF" ? "inset 0 0 0 4px #0A056B" : undefined }}
           initial={{ y: 170 }} animate={leaving ? { y: 170, transition: { duration: 0.25 } } : { y: 0, transition: { duration: 0.45, ease: EASE, delay: 0.3 } }} exit={{ y: 170, transition: { duration: 0.25, ease: EASE } }}>{h.number}</motion.span>
         <motion.span className="h-[112px] w-[150px] flex-none" initial={{ y: 170 }} animate={leaving ? { y: 170 } : { y: 0, transition: { duration: 0.45, ease: EASE, delay: 0.36 } }} exit={{ y: 170, transition: { duration: 0.25, ease: EASE } }}>
           <HorseSilks horse={horse} className="h-full w-full" />

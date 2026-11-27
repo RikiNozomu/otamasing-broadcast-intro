@@ -57,8 +57,8 @@ export function GridScene({ race }: { race: Race }) {
           ? { opacity: 0, x: 120, transition: { duration: 0.25, ease: EASE, delay: i * 0.015 } }
           : { opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)", transition: { duration: 0.42, ease: EASE, delay: 0.35 + i * 0.06 } }}
         exit={{ opacity: 0, x: 120, transition: { duration: 0.25, ease: EASE, delay: i * 0.03 } }}>
-        {show.draw && <span data-testid="gate" className={boxCls(gate)} style={gate ? { background: gate[0], color: gate[1], ...boxExtra(gate) } : undefined}>{dw}</span>}
-        {show.number && <span data-testid="number" className={boxCls(num)} style={{ ...numberFont(S), ...(num && { background: num[0], color: num[1], ...boxExtra(num) }) }}>{h.number}</span>}
+        {show.draw && <span data-testid="gate" className={boxCls(gate)} style={{ ...numberFont, ...(gate && { background: gate[0], color: gate[1], ...boxExtra(gate) }) }}>{dw}</span>}
+        {show.number && <span data-testid="number" className={boxCls(num)} style={{ ...numberFont, ...(num && { background: num[0], color: num[1], ...boxExtra(num) }) }}>{h.number}</span>}
         {show.silks && (hasSilks(horse)
           ? <span data-testid="silks" className="flex h-full min-h-0 items-center justify-center overflow-hidden"><HorseSilks horse={horse} className="h-full w-full" /></span>
           // no silks set for this horse yet: an empty slot
