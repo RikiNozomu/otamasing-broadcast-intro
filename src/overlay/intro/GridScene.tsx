@@ -60,9 +60,9 @@ export function GridScene({ race }: { race: Race }) {
         {show.draw && <span data-testid="gate" className={boxCls(gate)} style={gate ? { background: gate[0], color: gate[1], ...boxExtra(gate) } : undefined}>{dw}</span>}
         {show.number && <span data-testid="number" className={boxCls(num)} style={{ ...numberFont(S), ...(num && { background: num[0], color: num[1], ...boxExtra(num) }) }}>{h.number}</span>}
         {show.silks && (hasSilks(horse)
-          ? <span data-testid="silks" className="flex h-full min-h-0 items-center justify-center overflow-hidden rounded-[6px] bg-white/95 p-[3px]"><HorseSilks horse={horse} className="h-full w-full" /></span>
-          // no silks set for this horse yet: a quiet empty slot instead of a blank white card
-          : <span data-testid="silks-empty" className="h-full rounded-[6px] bg-white/10" />)}
+          ? <span data-testid="silks" className="flex h-full min-h-0 items-center justify-center overflow-hidden"><HorseSilks horse={horse} className="h-full w-full" /></span>
+          // no silks set for this horse yet: an empty slot
+          : <span data-testid="silks-empty" className="h-full" />)}
         <span data-testid="horse" className={cx(band, "font-bold")}>
           {S.show.horseFlag && <Flag code={h.horseCountry} className="h-[.7em] w-[1.05em]" />}
           <FitText>{h.name.toUpperCase()}</FitText>
